@@ -1,0 +1,24 @@
+# 不要なファイルを除外
+sample/deploy_script*.sh
+sample/lambda_code_file.py
+sample/project_documentation.md
+sample/readme_file.md
+sample/*.pdf
+
+# システムファイル
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+.env
+.env.local
+
+# IDE設定
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# AWS関連（セキュリティ情報を含む可能性）
+.aws/
+aws-exports.js

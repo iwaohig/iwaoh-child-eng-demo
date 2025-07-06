@@ -1,0 +1,520 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Child English Demo Application - DynamoDB, Lambda, and API Gateway'
+
+Parameters:
+  EnvironmentName:
+    Description: Environment name prefix for resources
+    Type: String
+    Default: 'iwaoh-child-eng'
+  
+  CorsOrigin:
+    Description: CORS origin for the API
+    Type: String
+    Default: '*'
+
+Resources:
+  # DynamoDB Table for Applications
+  ApplicationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${EnvironmentName}-applications'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+        - AttributeName: classroom
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: TimestampIndex
+          KeySchema:
+            - AttributeName: timestamp
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ClassroomIndex
+          KeySchema:
+            - AttributeName: classroom
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Application
+          Value: ChildEnglishDemo
+
+  # IAM Role for Lambda
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${EnvironmentName}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt ApplicationsTable.Arn
+                  - !Sub '${ApplicationsTable.Arn}/index/*'
+
+  # Lambda Function for Form Submission
+  FormSubmissionLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${EnvironmentName}-form-submission'
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          APPLICATIONS_TABLE: !Ref ApplicationsTable
+          CORS_ORIGIN: !Ref CorsOrigin
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              const headers = {
+                  'Access-Control-Allow-Origin': process.env.CORS_ORIGIN,
+                  'Access-Control-Allow-Headers': 'Content-Type',
+                  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                  'Content-Type': 'application/json'
+              };
+
+              try {
+                  if (event.httpMethod === 'OPTIONS') {
+                      return {
+                          statusCode: 200,
+                          headers,
+                          body: JSON.stringify({ message: 'OK' })
+                      };
+                  }
+
+                  if (event.httpMethod === 'POST') {
+                      const body = JSON.parse(event.body);
+                      
+                      const timestamp = new Date().toISOString();
+                      const submissionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                      
+                      const item = {
+                          id: submissionId,
+                          timestamp,
+                          status: '確認',
+                          classroom: body.classroom,
+                          parent: {
+                              lastName: body.parentLastName,
+                              firstName: body.parentFirstName,
+                              lastNameKana: body.parentLastNameKana,
+                              firstNameKana: body.parentFirstNameKana,
+                              zipCode: body.zipCode,
+                              address: body.address,
+                              phone: body.phone,
+                              email: body.email
+                          },
+                          child: {
+                              lastName: body.childLastName,
+                              firstName: body.childFirstName,
+                              lastNameKana: body.childLastNameKana,
+                              firstNameKana: body.childFirstNameKana,
+                              gender: body.gender,
+                              birthYear: body.birthYear,
+                              birthMonth: body.birthMonth,
+                              birthDay: body.birthDay
+                          },
+                          trigger: body.trigger,
+                          triggerOther: body.triggerOther || '',
+                          message: body.message || '',
+                          createdAt: timestamp,
+                          updatedAt: timestamp
+                      };
+                      
+                      const params = {
+                          TableName: process.env.APPLICATIONS_TABLE,
+                          Item: item
+                      };
+                      
+                      await dynamodb.put(params).promise();
+                      
+                      return {
+                          statusCode: 200,
+                          headers,
+                          body: JSON.stringify({
+                              success: true,
+                              message: 'Application submitted successfully',
+                              submissionId
+                          })
+                      };
+                  }
+
+                  return {
+                      statusCode: 405,
+                      headers,
+                      body: JSON.stringify({ error: 'Method not allowed' })
+                  };
+
+              } catch (error) {
+                  console.error('Error:', error);
+                  return {
+                      statusCode: 500,
+                      headers,
+                      body: JSON.stringify({
+                          success: false,
+                          error: 'Internal server error'
+                      })
+                  };
+              }
+          };
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Application
+          Value: ChildEnglishDemo
+
+  # Lambda Function for Admin API
+  AdminApiLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${EnvironmentName}-admin-api'
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          APPLICATIONS_TABLE: !Ref ApplicationsTable
+          CORS_ORIGIN: !Ref CorsOrigin
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+          exports.handler = async (event) => {
+              const headers = {
+                  'Access-Control-Allow-Origin': process.env.CORS_ORIGIN,
+                  'Access-Control-Allow-Headers': 'Content-Type',
+                  'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+                  'Content-Type': 'application/json'
+              };
+
+              try {
+                  if (event.httpMethod === 'OPTIONS') {
+                      return {
+                          statusCode: 200,
+                          headers,
+                          body: JSON.stringify({ message: 'OK' })
+                      };
+                  }
+
+                  if (event.httpMethod === 'GET') {
+                      const params = {
+                          TableName: process.env.APPLICATIONS_TABLE
+                      };
+                      
+                      const result = await dynamodb.scan(params).promise();
+                      
+                      return {
+                          statusCode: 200,
+                          headers,
+                          body: JSON.stringify({
+                              success: true,
+                              data: result.Items
+                          })
+                      };
+                  }
+
+                  if (event.httpMethod === 'PUT') {
+                      const body = JSON.parse(event.body);
+                      const id = event.pathParameters?.id;
+                      
+                      if (!id) {
+                          return {
+                              statusCode: 400,
+                              headers,
+                              body: JSON.stringify({ error: 'Missing id parameter' })
+                          };
+                      }
+                      
+                      const params = {
+                          TableName: process.env.APPLICATIONS_TABLE,
+                          Key: { id },
+                          UpdateExpression: 'SET #status = :status, updatedAt = :updatedAt',
+                          ExpressionAttributeNames: {
+                              '#status': 'status'
+                          },
+                          ExpressionAttributeValues: {
+                              ':status': body.status,
+                              ':updatedAt': new Date().toISOString()
+                          }
+                      };
+                      
+                      await dynamodb.update(params).promise();
+                      
+                      return {
+                          statusCode: 200,
+                          headers,
+                          body: JSON.stringify({
+                              success: true,
+                              message: 'Status updated successfully'
+                          })
+                      };
+                  }
+
+                  return {
+                      statusCode: 405,
+                      headers,
+                      body: JSON.stringify({ error: 'Method not allowed' })
+                  };
+
+              } catch (error) {
+                  console.error('Error:', error);
+                  return {
+                      statusCode: 500,
+                      headers,
+                      body: JSON.stringify({
+                          success: false,
+                          error: 'Internal server error'
+                      })
+                  };
+              }
+          };
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Application
+          Value: ChildEnglishDemo
+
+  # API Gateway
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${EnvironmentName}-api'
+      Description: 'Child English Demo API'
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Application
+          Value: ChildEnglishDemo
+
+  # API Gateway Resource for Submit
+  SubmitResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'submit'
+
+  # API Gateway Resource for Admin
+  AdminResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'admin'
+
+  # API Gateway Resource for Admin Applications
+  AdminApplicationsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !Ref AdminResource
+      PathPart: 'applications'
+
+  # API Gateway Resource for Admin Applications by ID
+  AdminApplicationsIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !Ref AdminApplicationsResource
+      PathPart: '{id}'
+
+  # API Gateway Method for Submit POST
+  SubmitPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref SubmitResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FormSubmissionLambda.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway Method for Submit OPTIONS
+  SubmitOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref SubmitResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FormSubmissionLambda.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway Method for Admin GET
+  AdminGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref AdminApplicationsResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AdminApiLambda.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway Method for Admin PUT
+  AdminPutMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref AdminApplicationsIdResource
+      HttpMethod: PUT
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AdminApiLambda.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # API Gateway Method for Admin OPTIONS
+  AdminOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref AdminApplicationsResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AdminApiLambda.Arn}/invocations'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # Lambda Permissions for API Gateway
+  FormSubmissionLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref FormSubmissionLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*'
+
+  AdminApiLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AdminApiLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*'
+
+  # API Gateway Deployment
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - SubmitPostMethod
+      - SubmitOptionsMethod
+      - AdminGetMethod
+      - AdminPutMethod
+      - AdminOptionsMethod
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: prod
+      StageDescription: 'Production stage'
+
+Outputs:
+  ApiEndpoint:
+    Description: 'API Gateway endpoint URL'
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod'
+    Export:
+      Name: !Sub '${EnvironmentName}-api-endpoint'
+
+  DynamoDBTableName:
+    Description: 'DynamoDB table name'
+    Value: !Ref ApplicationsTable
+    Export:
+      Name: !Sub '${EnvironmentName}-table-name'
+
+  DynamoDBTableArn:
+    Description: 'DynamoDB table ARN'
+    Value: !GetAtt ApplicationsTable.Arn
+    Export:
+      Name: !Sub '${EnvironmentName}-table-arn'
+
+  FormSubmissionLambdaArn:
+    Description: 'Form submission Lambda function ARN'
+    Value: !GetAtt FormSubmissionLambda.Arn
+    Export:
+      Name: !Sub '${EnvironmentName}-form-lambda-arn'
+
+  AdminApiLambdaArn:
+    Description: 'Admin API Lambda function ARN'
+    Value: !GetAtt AdminApiLambda.Arn
+    Export:
+      Name: !Sub '${EnvironmentName}-admin-lambda-arn'

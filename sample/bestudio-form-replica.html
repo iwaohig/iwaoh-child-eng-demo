@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>体験のお申込み｜株式会社サンプル会社名</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: "游ゴシック", YuGothic, "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", sans-serif;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #333;
+            background-color: #f5f5f5;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* ヘッダー */
+        .header {
+            background-color: #fff;
+            border-bottom: 3px solid #00549a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header-inner {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00549a;
+        }
+        
+        .header-contact {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* メインコンテンツ */
+        .main-container {
+            max-width: 680px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .page-title {
+            background-color: #00549a;
+            color: #fff;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 0;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .form-container {
+            background-color: #fff;
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 0 0 5px 5px;
+        }
+        
+        /* フォームセクション */
+        .form-section {
+            padding: 30px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00549a;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 4px solid #00549a;
+        }
+        
+        /* フォーム要素 */
+        .form-row {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .required {
+            display: inline-block;
+            background-color: #d32f2f;
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 8px;
+            margin-left: 10px;
+            border-radius: 3px;
+            font-weight: normal;
+        }
+        
+        .optional {
+            display: inline-block;
+            background-color: #666;
+            color: #fff;
+            font-size: 11px;
+            padding: 2px 8px;
+            margin-left: 10px;
+            border-radius: 3px;
+            font-weight: normal;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
+            font-family: inherit;
+            background-color: #fff;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #00549a;
+        }
+        
+        select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 30px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        
+        /* 名前入力欄 */
+        .name-inputs {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .name-inputs > div {
+            flex: 1;
+        }
+        
+        /* 生年月日 */
+        .birthday-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .birthday-inputs select {
+            flex: 1;
+        }
+        
+        .birthday-inputs span {
+            color: #666;
+        }
+        
+        /* ラジオボタン・チェックボックス */
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .radio-item,
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        input[type="radio"],
+        input[type="checkbox"] {
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        
+        .radio-item label,
+        .checkbox-item label {
+            cursor: pointer;
+            font-weight: normal;
+        }
+        
+        /* テキストエリア */
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* 郵便番号 */
+        .zip-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .zip-input input {
+            width: 100px;
+        }
+        
+        .zip-search-btn {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 6px 15px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .zip-search-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* 注意事項 */
+        .note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* 個人情報 */
+        .privacy-section {
+            background-color: #f8f8f8;
+            padding: 20px;
+            margin: 30px;
+            border: 1px solid #e0e0e0;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        
+        .privacy-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .privacy-content {
+            color: #666;
+        }
+        
+        /* 同意チェックボックス */
+        .agreement-section {
+            padding: 20px 30px;
+            background-color: #fafafa;
+            border-top: 1px solid #e5e5e5;
+        }
+        
+        .agreement-checkbox {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .agreement-checkbox input {
+            margin-top: 3px;
+            margin-right: 8px;
+        }
+        
+        /* 送信ボタン */
+        .submit-section {
+            padding: 30px;
+            text-align: center;
+            background-color: #fafafa;
+        }
+        
+        .submit-btn {
+            background-color: #ff6900;
+            color: #fff;
+            padding: 15px 60px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(255, 105, 0, 0.3);
+        }
+        
+        .submit-btn:hover {
+            background-color: #e55a00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 105, 0, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 640px) {
+            .header-inner {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .main-container {
+                padding: 0 10px;
+                margin: 20px auto;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+            
+            .name-inputs {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .birthday-inputs {
+                flex-wrap: wrap;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .submit-btn {
+                padding: 12px 40px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">無料体験レッスン・お問い合わせ</div>
+        </div>
+    </header>
+    
+    <!-- メインコンテンツ -->
+    <main class="main-container">
+        <h1 class="page-title">無料体験レッスン・お問い合わせ</h1>
+        
+        <form class="form-container" id="trialForm">
+            <!-- ご希望の教室 -->
+            <div class="form-section">
+                <h2 class="section-title">ご希望の教室</h2>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        都道府県
+                        <span class="required">必須</span>
+                    </label>
+                    <select name="prefecture" required>
+                        <option value="">選択してください</option>
+                        <option value="北海道">北海道</option>
+                        <option value="青森県">青森県</option>
+                        <option value="岩手県">岩手県</option>
+                        <option value="宮城県">宮城県</option>
+                        <option value="秋田県">秋田県</option>
+                        <option value="山形県">山形県</option>
+                        <option value="福島県">福島県</option>
+                        <option value="茨城県">茨城県</option>
+                        <option value="栃木県">栃木県</option>
+                        <option value="群馬県">群馬県</option>
+                        <option value="埼玉県">埼玉県</option>
+                        <option value="千葉県">千葉県</option>
+                        <option value="東京都">東京都</option>
+                        <option value="神奈川県">神奈川県</option>
+                        <option value="新潟県">新潟県</option>
+                        <option value="富山県">富山県</option>
+                        <option value="石川県">石川県</option>
+                        <option value="福井県">福井県</option>
+                        <option value="山梨県">山梨県</option>
+                        <option value="長野県">長野県</option>
+                        <option value="岐阜県">岐阜県</option>
+                        <option value="静岡県">静岡県</option>
+                        <option value="愛知県">愛知県</option>
+                        <option value="三重県">三重県</option>
+                        <option value="滋賀県">滋賀県</option>
+                        <option value="京都府">京都府</option>
+                        <option value="大阪府">大阪府</option>
+                        <option value="兵庫県">兵庫県</option>
+                        <option value="奈良県">奈良県</option>
+                        <option value="和歌山県">和歌山県</option>
+                        <option value="鳥取県">鳥取県</option>
+                        <option value="島根県">島根県</option>
+                        <option value="岡山県">岡山県</option>
+                        <option value="広島県">広島県</option>
+                        <option value="山口県">山口県</option>
+                        <option value="徳島県">徳島県</option>
+                        <option value="香川県">香川県</option>
+                        <option value="愛媛県">愛媛県</option>
+                        <option value="高知県">高知県</option>
+                        <option value="福岡県">福岡県</option>
+                        <option value="佐賀県">佐賀県</option>
+                        <option value="長崎県">長崎県</option>
+                        <option value="熊本県">熊本県</option>
+                        <option value="大分県">大分県</option>
+                        <option value="宮崎県">宮崎県</option>
+                        <option value="鹿児島県">鹿児島県</option>
+                        <option value="沖縄県">沖縄県</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        ご希望の教室
+                        <span class="required">必須</span>
+                    </label>
+                    <select name="classroom" required>
+                        <option value="">選択してください</option>
+                        <option value="渋谷教室">渋谷教室</option>
+                        <option value="新宿教室">新宿教室</option>
+                        <option value="池袋教室">池袋教室</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 保護者さまについて -->
+            <div class="form-section">
+                <h2 class="section-title">保護者さまについて</h2>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        保護者さまのお名前
+                        <span class="required">必須</span>
+                    </label>
+                    <div class="name-inputs">
+                        <div>
+                            <input type="text" name="parentLastName" placeholder="姓" required>
+                        </div>
+                        <div>
+                            <input type="text" name="parentFirstName" placeholder="名" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        保護者さまのお名前（ふりがな）
+                        <span class="required">必須</span>
+                    </label>
+                    <div class="name-inputs">
+                        <div>
+                            <input type="text" name="parentLastNameKana" placeholder="せい" required>
+                        </div>
+                        <div>
+                            <input type="text" name="parentFirstNameKana" placeholder="めい" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        郵便番号
+                        <span class="required">必須</span>
+                    </label>
+                    <div class="zip-input">
+                        <input type="text" name="zipCode" placeholder="123-4567" pattern="[0-9]{3}-[0-9]{4}" maxlength="8" required>
+                        <button type="button" class="zip-search-btn">住所自動入力</button>
+                    </div>
+                    <p class="note">※ハイフン（-）を含めて入力してください</p>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        ご住所
+                        <span class="required">必須</span>
+                    </label>
+                    <input type="text" name="address" placeholder="都道府県市区町村番地" required>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        電話番号
+                        <span class="required">必須</span>
+                    </label>
+                    <input type="tel" name="phone" placeholder="090-1234-5678" required>
+                    <p class="note">※日中つながりやすい番号をご入力ください</p>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        メールアドレス
+                        <span class="required">必須</span>
+                    </label>
+                    <input type="email" name="email" placeholder="sample@example.com" required>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        メールアドレス（確認用）
+                        <span class="required">必須</span>
+                    </label>
+                    <input type="email" name="emailConfirm" placeholder="sample@example.com" required>
+                </div>
+            </div>
+            
+            <!-- お子さまについて -->
+            <div class="form-section">
+                <h2 class="section-title">お子さまについて</h2>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        お子さまのお名前
+                        <span class="required">必須</span>
+                    </label>
+                    <div class="name-inputs">
+                        <div>
+                            <input type="text" name="childLastName" placeholder="姓" required>
+                        </div>
+                        <div>
+                            <input type="text" name="childFirstName" placeholder="名" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        お子さまのお名前（ふりがな）
+                        <span class="required">必須</span>
+                    </label>
+                    <div class="name-inputs">
+                        <div>
+                            <input type="text" name="childLastNameKana" placeholder="せい" required>
+                        </div>
+                        <div>
+                            <input type="text" name="childFirstNameKana" placeholder="めい" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        お子さまの性別
+                        <span class="required">必須</span>
+                    </label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="male" name="gender" value="男" required>
+                            <label for="male">男</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="female" name="gender" value="女" required>
+                            <label for="female">女</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        お子さまの生年月日
+                        <span class="required">必須</span>
+                    </label>
+                    <div class="birthday-inputs">
+                        <select name="birthYear" required>
+                            <option value="">----</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                            <option value="2022">2022</option>
+                            <option value="2021">2021</option>
+                            <option value="2020">2020</option>
+                            <option value="2019">2019</option>
+                            <option value="2018">2018</option>
+                            <option value="2017">2017</option>
+                            <option value="2016">2016</option>
+                            <option value="2015">2015</option>
+                            <option value="2014">2014</option>
+                            <option value="2013">2013</option>
+                            <option value="2012">2012</option>
+                            <option value="2011">2011</option>
+                            <option value="2010">2010</option>
+                            <option value="2009">2009</option>
+                            <option value="2008">2008</option>
+                            <option value="2007">2007</option>
+                        </select>
+                        <span>年</span>
+                        <select name="birthMonth" required>
+                            <option value="">--</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                        <span>月</span>
+                        <select name="birthDay" required>
+                            <option value="">--</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                            <option value="24">24</option>
+                            <option value="25">25</option>
+                            <option value="26">26</option>
+                            <option value="27">27</option>
+                            <option value="28">28</option>
+                            <option value="29">29</option>
+                            <option value="30">30</option>
+                            <option value="31">31</option>
+                        </select>
+                        <span>日</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- その他 -->
+            <div class="form-section">
+                <h2 class="section-title">その他</h2>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        今回、お申し込みいただいたきっかけ
+                        <span class="required">必須</span>
+                    </label>
+                    <select name="trigger" required>
+                        <option value="">選択してください</option>
+                        <option value="インターネット検索">インターネット検索</option>
+                        <option value="インターネット上の広告">インターネット上の広告</option>
+                        <option value="すでに通わせている保護者やお友だちからのご紹介">すでに通わせている保護者やお友だちからのご紹介</option>
+                        <option value="こどもちゃれんじ・進研ゼミからのご案内">こどもちゃれんじ・進研ゼミからのご案内</option>
+                        <option value="ダイレクトメール">ダイレクトメール</option>
+                        <option value="新聞折込チラシ">新聞折込チラシ</option>
+                        <option value="教室の看板">教室の看板</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                
+                <div class="form-row" id="otherTrigger" style="display: none;">
+                    <label class="form-label">
+                        その他の場合は詳細をご記入ください
+                        <span class="required">必須</span>
+                    </label>
+                    <input type="text" name="triggerOther" placeholder="詳細をご記入ください">
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">
+                        ご質問など
+                        <span class="optional">任意</span>
+                    </label>
+                    <textarea name="message" placeholder="ご質問などございましたらご記入ください"></textarea>
+                </div>
+            </div>
+            
+            <!-- 個人情報の取り扱いについて -->
+            <div class="privacy-section">
+                <div class="privacy-title">＜個人情報の取り扱いについて＞</div>
+                <div class="privacy-content">
+                    株式会社サンプル会社名にご提供いただく個人情報は、お申込みいただいた商品・サービスの提供のほか、学習・語学の商品・サービスおよびその決済方法等に関するご案内、調査、統計・マーケティング資料作成および、研究・企画開発に利用します。お客様の意思によりご提供いただけない部分がある場合、手続き・サービス等に支障が生じることがあります。なお、商品の発送等を当社から協力企業へ業務委託しますが、個人情報の取り扱いについて厳重に委託先を管理・指導します。また、当社が運営する教室やサービスについてお客様へご案内するダイレクトメール等の送付を、株式会社サンプル会社名に委託する場合があります。その際、すでに当社の教室・サービスをご利用中、または過去にご利用されたお客様に重ねてダイレクトメール等が届かないように、お客様の情報を株式会社サンプル会社名等に提供します。個人情報に関するお問い合わせは個人情報お問い合わせ窓口(0120－815-896通話料無料、日・祝・GW・夏期・年末年始など所定の休日を除く、10時～18時）にて承ります。<br><br>
+                    （株）サンプル会社名 個人情報保護責任者<br><br>
+                    提携企業が運営する教室をお選びの場合、ご希望の教室から直接お客様にご連絡するために、ご連絡先等の情報を弊社から提携企業に提供することがあります。ご提供いただいく情報は、弊社および提携企業それぞれで適切に管理・利用いたします。
+                </div>
+            </div>
+            
+            <!-- 同意 -->
+            <div class="agreement-section">
+                <div class="agreement-checkbox">
+                    <input type="checkbox" id="agree" name="agree" required>
+                    <label for="agree">
+                        <span class="form-label">
+                            上記の個人情報の取り扱いについて同意する
+                            <span class="required">必須</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 送信ボタン -->
+            <div class="submit-section">
+                <button type="submit" class="submit-btn" disabled>確認画面へ</button>
+            </div>
+        </form>
+    </main>
+    
+    <script>
+        // フォームの初期化
+        const form = document.getElementById('trialForm');
+        const submitBtn = document.querySelector('.submit-btn');
+        const agreeCheckbox = document.getElementById('agree');
+        
+        // 同意チェックボックスの状態によって送信ボタンを制御
+        agreeCheckbox.addEventListener('change', function() {
+            submitBtn.disabled = !this.checked;
+        });
+        
+        // 都道府県選択は不要（3つの教室のみ）
+        
+        // きっかけで「その他」を選択した場合の処理
+        const triggerSelect = document.querySelector('select[name="trigger"]');
+        const otherTriggerRow = document.getElementById('otherTrigger');
+        const otherTriggerInput = document.querySelector('input[name="triggerOther"]');
+        
+        triggerSelect.addEventListener('change', function() {
+            if (this.value === 'その他') {
+                otherTriggerRow.style.display = 'block';
+                otherTriggerInput.required = true;
+            } else {
+                otherTriggerRow.style.display = 'none';
+                otherTriggerInput.required = false;
+                otherTriggerInput.value = '';
+            }
+        });
+        
+        // メールアドレス確認
+        const emailInput = document.querySelector('input[name="email"]');
+        const emailConfirmInput = document.querySelector('input[name="emailConfirm"]');
+        
+        emailConfirmInput.addEventListener('blur', function() {
+            if (this.value && this.value !== emailInput.value) {
+                this.setCustomValidity('メールアドレスが一致しません');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+        
+        // 郵便番号の自動フォーマット
+        const zipCodeInput = document.querySelector('input[name="zipCode"]');
+        zipCodeInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value.length > 3) {
+                value = value.slice(0, 3) + '-' + value.slice(3, 7);
+            }
+            e.target.value = value;
+        });
+        
+        // フォーム送信処理
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // バリデーション
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // メールアドレスの一致確認
+            if (emailInput.value !== emailConfirmInput.value) {
+                alert('メールアドレスが一致しません');
+                emailConfirmInput.focus();
+                return;
+            }
+            
+            // フォームデータを収集
+            const formData = new FormData(form);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // DynamoDBにデータを送信
+            fetch('/api/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('お申し込みありがとうございました。');
+                    form.reset();
+                } else {
+                    alert('エラーが発生しました。もう一度お試しください。');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('エラーが発生しました。もう一度お試しください。');
+            });
+        });
+    </script>
+</body>
+</html>

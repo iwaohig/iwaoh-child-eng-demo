@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>体験申込システム - デモ</title>
+    <style>
+        body {
+            font-family: "游ゴシック", YuGothic, "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", Meiryo, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #00549a;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .description {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #00549a;
+        }
+        
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .link-card {
+            background: linear-gradient(135deg, #00549a 0%, #0066cc 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .link-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,84,154,0.3);
+        }
+        
+        .link-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .link-card p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .admin-card {
+            background: linear-gradient(135deg, #00c3f7 0%, #0099cc 100%);
+        }
+        
+        .admin-card:hover {
+            box-shadow: 0 4px 12px rgba(0,195,247,0.3);
+        }
+        
+        .system-info {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .system-info h3 {
+            color: #00549a;
+            margin-bottom: 15px;
+        }
+        
+        .system-info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .system-info li {
+            margin-bottom: 8px;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .tech-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        
+        .tech-item strong {
+            color: #00549a;
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 体験申込システム デモ</h1>
+        
+        <div class="description">
+            <h3>📝 システム概要</h3>
+            <p>このデモは、既存のSalesforce + SPIRALシステムを、AWS + LINE WORKS WOFFに置き換える検証用モックアプリケーションです。</p>
+            <p>教室の体験申込受付から、教室の先生による申込管理までの一連の流れを体験できます。</p>
+        </div>
+        
+        <div class="links">
+            <a href="sample/bestudio-form-replica.html" class="link-card">
+                <h3>📋 体験申込フォーム</h3>
+                <p>お客様が体験申込を行うWebフォーム<br>（既存HTMLを改良）</p>
+            </a>
+            
+            <a href="woff-admin.html" class="link-card admin-card">
+                <h3>👨‍🏫 管理画面 (WOFF)</h3>
+                <p>教室の先生が申込を管理する画面<br>（LINE WORKS WOFF代替）</p>
+            </a>
+        </div>
+        
+        <div class="system-info">
+            <h3>🏗️ システム構成</h3>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <strong>フロントエンド</strong>
+                    HTML/CSS/JavaScript<br>
+                    GitHub Pages
+                </div>
+                <div class="tech-item">
+                    <strong>バックエンド</strong>
+                    AWS Lambda<br>
+                    API Gateway
+                </div>
+                <div class="tech-item">
+                    <strong>データベース</strong>
+                    Amazon DynamoDB<br>
+                    (iwaoh-child-eng-*)
+                </div>
+                <div class="tech-item">
+                    <strong>管理機能</strong>
+                    LINE WORKS WOFF<br>
+                    (SPIRALの代替)
+                </div>
+            </div>
+            
+            <h3>📊 機能仕様</h3>
+            <ul>
+                <li><strong>教室選択:</strong> 3つの教室（渋谷・新宿・池袋）から選択</li>
+                <li><strong>申込受付:</strong> 体験申込データをDynamoDBに保存</li>
+                <li><strong>ステータス管理:</strong> 確認 → 予約未決定 → 予約済み → 保留中 → 結果決定</li>
+                <li><strong>デモ用簡略化:</strong> 教室別分類なし（全データ表示）</li>
+                <li><strong>AWS リソース:</strong> 全てのリソースに "iwaoh-child-eng-" プレフィックス</li>
+            </ul>
+            
+            <h3>🔧 デプロイ手順</h3>
+            <ol>
+                <li>GitHubリポジトリ作成: <code>iwaoh-child-eng-demo</code></li>
+                <li>GitHub Pagesでフロントエンドを公開</li>
+                <li>AWS CloudFormationでバックエンドリソースを作成</li>
+                <li>LINE WORKS WOFFアプリケーションを設定</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>
