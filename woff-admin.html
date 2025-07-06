@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>体験申込管理 - LINE WORKS WOFF</title>
+    <!-- WOFF SDK -->
+    <script src="https://static.worksmobile.net/static/wm/woff/edge/3/sdk.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -726,21 +728,113 @@
     <script>
         let applications = [];
         let filteredApplications = [];
+        let woffReady = false;
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
+            // WOFF SDK初期化
+            if (typeof woff !== 'undefined') {
+                woff.init()
+                    .then(() => {
+                        console.log('WOFF SDK initialized successfully');
+                        woffReady = true;
+                        
+                        // WOFFのqueryStringを取得
+                        return woff.getQueryString();
+                    })
+                    .then((queryString) => {
+                        console.log('WOFF QueryString:', queryString);
+                        
+                        // QueryStringから直接パラメータを解析
+                        if (queryString) {
+                            const params = new URLSearchParams(queryString);
+                            const view = params.get('view');
+                            const id = params.get('id');
+                            const mode = params.get('mode');
+                            
+                            console.log('WOFF params:', { view, id, mode });
+                            
+                            if (view === 'detail' && id) {
+                                // 詳細表示モード
+                                showDetailMode(id, mode);
+                                return;
+                            }
+                        }
+                        
+                        // 通常の初期化処理
+                        initializeApp();
+                    })
+                    .catch((error) => {
+                        console.error('WOFF initialization error:', error);
+                        // WOFFが利用できない場合は通常の初期化
+                        initializeApp();
+                    });
+            } else {
+                // WOFF SDKが利用できない場合（通常のブラウザアクセス）
+                console.log('WOFF SDK not available, using standard initialization');
+                initializeApp();
+            }
         });
 
         // アプリ初期化
         function initializeApp() {
-            // URLパラメータを解析
-            const urlParams = new URLSearchParams(window.location.search);
-            const view = urlParams.get('view');
-            const id = urlParams.get('id');
-            const mode = urlParams.get('mode');
+            // URLパラメータを解析（複数の方法を試す）
+            let view = null;
+            let id = null;
+            let mode = null;
 
-            console.log('URLパラメータ:', { view, id, mode });
+            // 方法1: 通常のURLパラメータ
+            const urlParams = new URLSearchParams(window.location.search);
+            view = urlParams.get('view');
+            id = urlParams.get('id');
+            mode = urlParams.get('mode');
+
+            // 方法2: WOFF stateパラメータから取得
+            if (!view) {
+                const woffState = urlParams.get('woff.state');
+                if (woffState) {
+                    console.log('WOFF state パラメータ:', woffState);
+                    // woff.stateをデコード
+                    const decodedState = decodeURIComponent(woffState);
+                    console.log('デコードされたWOFF state:', decodedState);
+                    
+                    // デコードされたstateからパラメータを抽出
+                    // 例: "/?view=detail&id=sub_1751794195755_ocjt461di"
+                    if (decodedState.includes('?')) {
+                        const stateParams = new URLSearchParams(decodedState.split('?')[1]);
+                        view = stateParams.get('view');
+                        id = stateParams.get('id');
+                        mode = stateParams.get('mode');
+                        console.log('WOFF stateから抽出:', { view, id, mode });
+                    }
+                }
+            }
+
+            // 方法3: ハッシュフラグメントからパラメータを取得
+            if (!view && window.location.hash) {
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                view = hashParams.get('view');
+                id = hashParams.get('id');
+                mode = hashParams.get('mode');
+                console.log('ハッシュパラメータ:', { view, id, mode });
+            }
+
+            // 方法4: WOFFアプリ内で動作している場合、親フレームのURLも確認
+            if (!view && window.parent !== window) {
+                try {
+                    const parentUrl = window.parent.location.href;
+                    const parentParams = new URLSearchParams(new URL(parentUrl).search);
+                    view = parentParams.get('view');
+                    id = parentParams.get('id');
+                    mode = parentParams.get('mode');
+                    console.log('親フレームURLパラメータ:', { view, id, mode, parentUrl });
+                } catch (e) {
+                    console.log('親フレームのURL取得エラー:', e);
+                }
+            }
+
+            console.log('最終URLパラメータ:', { view, id, mode });
+            console.log('view:', view, 'id:', id, 'mode:', mode);
 
             if (view === 'detail' && id) {
                 // 詳細表示モード
@@ -750,6 +844,22 @@
                 showListMode();
             }
         }
+
+        // postMessageでURLパラメータを受信
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'urlParams') {
+                const { view, id, mode } = event.data;
+                if (view === 'detail' && id) {
+                    showDetailMode(id, mode);
+                }
+            }
+        });
+
+        // ハッシュ変更を監視
+        window.addEventListener('hashchange', function() {
+            console.log('ハッシュが変更されました:', window.location.hash);
+            initializeApp();
+        });
 
         // 一覧表示モード
         function showListMode() {
@@ -765,6 +875,7 @@
 
         // 詳細表示用のデータ取得
         async function loadApplicationsForDetail(id, mode) {
+            console.log('loadApplicationsForDetail called with id:', id, 'mode:', mode);
             try {
                 // まず全体のデータを取得
                 const response = await fetch('https://im1swit6p3.execute-api.ap-northeast-1.amazonaws.com/prod/admin/applications');
@@ -802,9 +913,11 @@
 
                 // 指定されたIDの申込を検索
                 const targetApp = applications.find(app => app.id === id);
+                console.log('Found application:', targetApp);
                 if (targetApp) {
                     displayDetailView(targetApp, mode);
                 } else {
+                    console.log('Application not found for id:', id);
                     showErrorMessage('指定された申込が見つかりません');
                 }
             } catch (error) {
@@ -1073,6 +1186,24 @@
 
         // 詳細表示
         function showDetail(id) {
+            if (woffReady && typeof woff !== 'undefined') {
+                // WOFF環境では新しいウィンドウを開く
+                // WOFFの仕様: クエリパラメータを使う場合は "?" の前に "/" が必要
+                const detailUrl = `https://woff.worksmobile.com/woff/Gwb_BTfV562bnUxhhp81PA/?view=detail&id=${encodeURIComponent(id)}`;
+                console.log('Opening detail window:', detailUrl);
+                woff.openWindow({
+                    url: detailUrl
+                });
+            } else {
+                // 通常のブラウザ環境ではURLパラメータを設定して遷移
+                const url = new URL(window.location);
+                url.searchParams.set('view', 'detail');
+                url.searchParams.set('id', id);
+                window.location.href = url.toString();
+            }
+            return;
+            
+            // 以下は旧モーダル表示コード（後で削除）
             const app = applications.find(app => app.id === id);
             if (!app) return;
 
@@ -1277,13 +1408,20 @@
 
         // 一覧に戻る
         function goBackToList() {
-            // URLから検索パラメータを削除
-            const url = new URL(window.location);
-            url.search = '';
-            window.history.pushState({}, '', url);
-            
-            // 一覧モードに切り替え
-            showListMode();
+            if (woffReady && typeof woff !== 'undefined') {
+                // WOFF環境では新しいウィンドウを開く（パラメータなし）
+                woff.openWindow({
+                    url: 'https://woff.worksmobile.com/woff/Gwb_BTfV562bnUxhhp81PA/'
+                });
+            } else {
+                // 通常のブラウザ環境
+                const url = new URL(window.location);
+                url.search = '';
+                window.history.pushState({}, '', url);
+                
+                // 一覧モードに切り替え
+                showListMode();
+            }
         }
 
         // エラーメッセージ表示
