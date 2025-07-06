@@ -1,0 +1,9 @@
+{
+  "name": "lambda-bot-notify",
+  "version": "1.0.0",
+  "description": "LINE WORKS Bot notification for new applications",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
