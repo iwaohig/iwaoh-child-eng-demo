@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>フォームテスト</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; margin-bottom: 5px; }
+        button { background: #007cba; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background: #005a87; }
+        .required { color: red; }
+    </style>
+</head>
+<body>
+    <h1>体験申込フォーム（テスト用）</h1>
+    
+    <form id="applicationForm">
+        <div class="form-group">
+            <label>教室 <span class="required">*</span></label>
+            <select name="classroom" required>
+                <option value="">選択してください</option>
+                <option value="渋谷教室">渋谷教室</option>
+                <option value="新宿教室">新宿教室</option>
+                <option value="池袋教室">池袋教室</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>保護者名（姓） <span class="required">*</span></label>
+            <input type="text" name="parentLastName" required>
+        </div>
+        
+        <div class="form-group">
+            <label>保護者名（名） <span class="required">*</span></label>
+            <input type="text" name="parentFirstName" required>
+        </div>
+        
+        <div class="form-group">
+            <label>電話番号 <span class="required">*</span></label>
+            <input type="tel" name="phone" required>
+        </div>
+        
+        <div class="form-group">
+            <label>メールアドレス <span class="required">*</span></label>
+            <input type="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label>お子様名（姓） <span class="required">*</span></label>
+            <input type="text" name="childLastName" required>
+        </div>
+        
+        <div class="form-group">
+            <label>お子様名（名） <span class="required">*</span></label>
+            <input type="text" name="childFirstName" required>
+        </div>
+        
+        <div class="form-group">
+            <label>性別 <span class="required">*</span></label>
+            <select name="gender" required>
+                <option value="">選択してください</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>生年 <span class="required">*</span></label>
+            <select name="birthYear" required>
+                <option value="">選択してください</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+                <option value="2021">2021</option>
+                <option value="2020">2020</option>
+                <option value="2019">2019</option>
+                <option value="2018">2018</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>生月 <span class="required">*</span></label>
+            <select name="birthMonth" required>
+                <option value="">選択してください</option>
+                <option value="01">1月</option>
+                <option value="02">2月</option>
+                <option value="03">3月</option>
+                <option value="04">4月</option>
+                <option value="05">5月</option>
+                <option value="06">6月</option>
+                <option value="07">7月</option>
+                <option value="08">8月</option>
+                <option value="09">9月</option>
+                <option value="10">10月</option>
+                <option value="11">11月</option>
+                <option value="12">12月</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>生日 <span class="required">*</span></label>
+            <select name="birthDay" required>
+                <option value="">選択してください</option>
+                <!-- 1-31の選択肢 -->
+                <script>
+                    for (let i = 1; i <= 31; i++) {
+                        document.write(`<option value="${i.toString().padStart(2, '0')}">${i}日</option>`);
+                    }
+                </script>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>きっかけ</label>
+            <select name="trigger">
+                <option value="">選択してください</option>
+                <option value="インターネット上の広告">インターネット上の広告</option>
+                <option value="友人・知人の紹介">友人・知人の紹介</option>
+                <option value="チラシ・ポスター">チラシ・ポスター</option>
+                <option value="その他">その他</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>ご質問・ご要望</label>
+            <textarea name="message" rows="4"></textarea>
+        </div>
+        
+        <button type="submit">送信</button>
+    </form>
+
+    <script>
+        document.getElementById('applicationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const data = {};
+            
+            // フォームデータを収集
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // DynamoDBにデータを送信
+            console.log('送信データ:', JSON.stringify(data, null, 2));
+            
+            fetch('https://im1swit6p3.execute-api.ap-northeast-1.amazonaws.com/prod/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                console.log('レスポンスステータス:', response.status);
+                console.log('レスポンスヘッダー:', [...response.headers.entries()]);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.text(); // まずテキストとして取得
+            })
+            .then(text => {
+                console.log('レスポンステキスト:', text);
+                
+                try {
+                    const result = JSON.parse(text);
+                    console.log('パース結果:', result);
+                    
+                    if (result.success) {
+                        alert(`お申し込みありがとうございました。\n申込ID: ${result.id}\n\nBot通知がLINE WORKSに送信されました！`);
+                        form.reset();
+                    } else {
+                        alert('エラーが発生しました。もう一度お試しください。');
+                    }
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    console.error('レスポンス内容:', text);
+                    alert('サーバーからの応答に問題があります。');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`エラーが発生しました: ${error.message}`);
+            });
+        });
+    </script>
+</body>
+</html>

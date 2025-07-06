@@ -802,25 +802,47 @@
             }
             
             // DynamoDBにデータを送信
-            fetch('/api/submit', {
+            console.log('送信データ:', JSON.stringify(data, null, 2));
+            
+            fetch('https://im1swit6p3.execute-api.ap-northeast-1.amazonaws.com/prod/submit', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    alert('お申し込みありがとうございました。');
-                    form.reset();
-                } else {
-                    alert('エラーが発生しました。もう一度お試しください。');
+            .then(response => {
+                console.log('レスポンスステータス:', response.status);
+                console.log('レスポンスヘッダー:', [...response.headers.entries()]);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return response.text(); // まずテキストとして取得
+            })
+            .then(text => {
+                console.log('レスポンステキスト:', text);
+                
+                try {
+                    const result = JSON.parse(text);
+                    console.log('パース結果:', result);
+                    
+                    if (result.success) {
+                        alert(`お申し込みありがとうございました。\n申込ID: ${result.id}`);
+                        form.reset();
+                    } else {
+                        alert('エラーが発生しました。もう一度お試しください。');
+                    }
+                } catch (parseError) {
+                    console.error('JSON parse error:', parseError);
+                    console.error('レスポンス内容:', text);
+                    alert('サーバーからの応答に問題があります。');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('エラーが発生しました。もう一度お試しください。');
+                alert(`エラーが発生しました: ${error.message}`);
             });
         });
     </script>
