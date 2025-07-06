@@ -499,6 +499,132 @@
                 height: calc(90vh - 80px);
             }
         }
+
+        /* 詳細表示モード用スタイル */
+        .detail-mode .stats,
+        .detail-mode .filter-section,
+        .detail-mode .section-header,
+        .detail-mode .applications-list {
+            display: none;
+        }
+
+        .detail-mode .applications-section {
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .detail-view {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 16px;
+        }
+
+        .detail-mode .detail-view {
+            display: block;
+        }
+
+        .detail-header {
+            background: linear-gradient(135deg, #00c3f7 0%, #0099cc 100%);
+            color: white;
+            padding: 20px 16px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .detail-back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .detail-back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .detail-back-btn:active {
+            transform: scale(0.95);
+        }
+
+        .detail-body {
+            padding: 20px 16px;
+        }
+
+        .detail-status-section {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .detail-status-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .detail-status-value {
+            display: inline-block;
+        }
+
+        .detail-status-actions {
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .detail-status-select {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .detail-status-update-btn {
+            background: #00c3f7;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 80px;
+        }
+
+        .notify-badge {
+            background: #ff6b6b;
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -563,6 +689,17 @@
             </div>
         </div>
 
+        <!-- 詳細表示ビュー -->
+        <div class="detail-view" id="detailView">
+            <div class="detail-header">
+                <div class="detail-title" id="detailTitle">申込詳細</div>
+                <button class="detail-back-btn" onclick="goBackToList()">一覧に戻る</button>
+            </div>
+            <div class="detail-body" id="detailBody">
+                <!-- 詳細データがここに表示されます -->
+            </div>
+        </div>
+
         <div class="applications-section">
             <div class="section-header">
                 申込一覧
@@ -592,14 +729,103 @@
 
         // 初期化
         document.addEventListener('DOMContentLoaded', function() {
-            loadApplications();
+            initializeApp();
         });
 
-        // DynamoDBからデータを取得（実際の実装では API Gateway 経由）
+        // アプリ初期化
+        function initializeApp() {
+            // URLパラメータを解析
+            const urlParams = new URLSearchParams(window.location.search);
+            const view = urlParams.get('view');
+            const id = urlParams.get('id');
+            const mode = urlParams.get('mode');
+
+            console.log('URLパラメータ:', { view, id, mode });
+
+            if (view === 'detail' && id) {
+                // 詳細表示モード
+                showDetailMode(id, mode);
+            } else {
+                // 通常の一覧表示モード
+                showListMode();
+            }
+        }
+
+        // 一覧表示モード
+        function showListMode() {
+            document.body.classList.remove('detail-mode');
+            loadApplications();
+        }
+
+        // 詳細表示モード
+        function showDetailMode(id, mode) {
+            document.body.classList.add('detail-mode');
+            loadApplicationsForDetail(id, mode);
+        }
+
+        // 詳細表示用のデータ取得
+        async function loadApplicationsForDetail(id, mode) {
+            try {
+                // まず全体のデータを取得
+                const response = await fetch('https://im1swit6p3.execute-api.ap-northeast-1.amazonaws.com/prod/admin/applications');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    applications = data.data || [];
+                } else {
+                    console.error('API Error:', response.status);
+                    // フォールバック: デモ用のダミーデータ
+                    applications = [
+                        {
+                            id: 'sub_1704067200000_abc123',
+                            timestamp: '2024-01-01T10:00:00Z',
+                            status: '確認',
+                            classroom: '渋谷教室',
+                            parent: {
+                                lastName: '田中',
+                                firstName: '太郎',
+                                phone: '090-1234-5678',
+                                email: 'tanaka@example.com'
+                            },
+                            child: {
+                                lastName: '田中',
+                                firstName: '花子',
+                                gender: '女',
+                                birthYear: '2018',
+                                birthMonth: '3',
+                                birthDay: '15'
+                            },
+                            trigger: 'インターネット検索'
+                        }
+                    ];
+                }
+
+                // 指定されたIDの申込を検索
+                const targetApp = applications.find(app => app.id === id);
+                if (targetApp) {
+                    displayDetailView(targetApp, mode);
+                } else {
+                    showErrorMessage('指定された申込が見つかりません');
+                }
+            } catch (error) {
+                console.error('データの読み込みに失敗しました:', error);
+                showErrorMessage('データの読み込みに失敗しました');
+            }
+        }
+
+        // DynamoDBからデータを取得（API Gateway 経由）
         async function loadApplications() {
             try {
-                // デモ用のダミーデータ
-                applications = [
+                // 実際のAPIからデータを取得
+                const response = await fetch('https://im1swit6p3.execute-api.ap-northeast-1.amazonaws.com/prod/admin/applications');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    applications = data.data || [];
+                } else {
+                    console.error('API Error:', response.status);
+                    // フォールバック: デモ用のダミーデータ
+                    applications = [
                     {
                         id: 'sub_1704067200000_abc123',
                         timestamp: '2024-01-01T10:00:00Z',
@@ -663,12 +889,17 @@
                         },
                         trigger: 'インターネット上の広告'
                     }
-                ];
+                    ];
+                }
 
                 displayApplications();
                 updateStats();
             } catch (error) {
                 console.error('データの読み込みに失敗しました:', error);
+                // エラー時はダミーデータを使用
+                applications = [];
+                displayApplications();
+                updateStats();
             }
         }
 
@@ -781,18 +1012,49 @@
         // ステータス変更
         async function changeStatus(id, newStatus) {
             try {
-                // 実際の実装では API を呼び出してDynamoDBを更新
-                const app = applications.find(app => app.id === id);
-                if (app) {
-                    app.status = newStatus;
-                    app.updatedAt = new Date().toISOString();
+                console.log('ステータス変更開始:', { id, newStatus });
+                
+                // API を呼び出してDynamoDBを更新
+                const url = `https://im1swit6p3.execute-api.ap-northeast-1.amazonaws.com/prod/admin/applications/${id}`;
+                const requestBody = { status: newStatus };
+                
+                console.log('API呼び出し:', { url, requestBody });
+                
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log('APIレスポンス:', { status: response.status, ok: response.ok });
+
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log('APIレスポンスデータ:', responseData);
+                    
+                    // ローカルデータも更新
+                    const app = applications.find(app => app.id === id);
+                    if (app) {
+                        console.log('ローカルデータ更新前:', app.status);
+                        app.status = newStatus;
+                        app.updatedAt = new Date().toISOString();
+                        console.log('ローカルデータ更新後:', app.status);
+                    }
                     
                     updateStats();
                     renderApplicationsList();
+                    
+                    alert('ステータスが正常に更新されました！');
+                } else {
+                    const errorText = await response.text();
+                    console.error('APIエラーレスポンス:', errorText);
+                    throw new Error(`API Error: ${response.status} - ${errorText}`);
                 }
             } catch (error) {
                 console.error('ステータス更新に失敗しました:', error);
-                alert('ステータスの更新に失敗しました。');
+                alert(`ステータスの更新に失敗しました: ${error.message}`);
             }
         }
 
@@ -901,6 +1163,141 @@
             if (event.target === modal) {
                 modal.style.display = 'none';
             }
+        }
+
+        // 詳細表示
+        function displayDetailView(app, mode) {
+            const detailTitle = document.getElementById('detailTitle');
+            const detailBody = document.getElementById('detailBody');
+            
+            detailTitle.textContent = `${app.child.lastName} ${app.child.firstName} さんの申込詳細`;
+            
+            detailBody.innerHTML = `
+                <div class="detail-status-section">
+                    <div class="detail-status-label">現在のステータス</div>
+                    <div class="detail-status-value">
+                        <span class="status-badge status-${getStatusClass(app.status)}">${app.status}</span>
+                        ${app.status === '確認' ? '<span class="notify-badge">NEW</span>' : ''}
+                    </div>
+                    <div class="detail-status-actions">
+                        <select class="detail-status-select" id="detailStatusSelect">
+                            <option value="${app.status}">${app.status}</option>
+                            <option value="確認">確認</option>
+                            <option value="予約未決定">予約未決定</option>
+                            <option value="予約済み">予約済み</option>
+                            <option value="保留中">保留中</option>
+                            <option value="結果決定">結果決定</option>
+                        </select>
+                        <button class="detail-status-update-btn" onclick="updateDetailStatus('${app.id}')">更新</button>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>基本情報</h3>
+                    <div class="detail-row">
+                        <div class="detail-label">申込ID</div>
+                        <div class="detail-value">${app.id}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">申込日時</div>
+                        <div class="detail-value">${new Date(app.timestamp).toLocaleString('ja-JP')}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">教室</div>
+                        <div class="detail-value">${app.classroom}</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>保護者情報</h3>
+                    <div class="detail-row">
+                        <div class="detail-label">お名前</div>
+                        <div class="detail-value">${app.parent.lastName} ${app.parent.firstName}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">電話番号</div>
+                        <div class="detail-value"><a href="tel:${app.parent.phone}">${app.parent.phone}</a></div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">メール</div>
+                        <div class="detail-value"><a href="mailto:${app.parent.email}">${app.parent.email}</a></div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>お子様情報</h3>
+                    <div class="detail-row">
+                        <div class="detail-label">お名前</div>
+                        <div class="detail-value">${app.child.lastName} ${app.child.firstName}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">性別</div>
+                        <div class="detail-value">${app.child.gender}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">生年月日</div>
+                        <div class="detail-value">${app.child.birthYear}年${app.child.birthMonth}月${app.child.birthDay}日</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>その他</h3>
+                    <div class="detail-row">
+                        <div class="detail-label">きっかけ</div>
+                        <div class="detail-value">${app.trigger}</div>
+                    </div>
+                    ${app.message ? `
+                    <div class="detail-row">
+                        <div class="detail-label">メッセージ</div>
+                        <div class="detail-value">${app.message}</div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // 詳細画面でのステータス更新
+        async function updateDetailStatus(id) {
+            const newStatus = document.getElementById('detailStatusSelect').value;
+            const app = applications.find(app => app.id === id);
+            
+            if (!app || app.status === newStatus) {
+                return;
+            }
+
+            try {
+                await changeStatus(id, newStatus);
+                // 詳細画面を再描画
+                app.status = newStatus;
+                displayDetailView(app);
+            } catch (error) {
+                console.error('ステータス更新エラー:', error);
+            }
+        }
+
+        // 一覧に戻る
+        function goBackToList() {
+            // URLから検索パラメータを削除
+            const url = new URL(window.location);
+            url.search = '';
+            window.history.pushState({}, '', url);
+            
+            // 一覧モードに切り替え
+            showListMode();
+        }
+
+        // エラーメッセージ表示
+        function showErrorMessage(message) {
+            const detailBody = document.getElementById('detailBody');
+            detailBody.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">❌</div>
+                    <div class="empty-state-text">${message}</div>
+                    <div class="empty-state-subtext">
+                        <button class="btn btn-primary" onclick="goBackToList()">一覧に戻る</button>
+                    </div>
+                </div>
+            `;
         }
     </script>
 </body>
