@@ -711,6 +711,28 @@
             cursor: not-allowed;
         }
 
+        /* 詳細モーダル内のステータス選択 */
+        .status-select-detail {
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .status-select-detail:focus {
+            outline: none;
+            border-color: #00c3f7;
+        }
+
+        .status-select-detail:hover {
+            border-color: #00c3f7;
+        }
+
     </style>
 </head>
 <body>
@@ -1408,6 +1430,13 @@
                     renderApplicationsList();
                     closeReservationModal();
                     
+                    // 詳細モーダルが開いている場合は更新
+                    if (document.getElementById('detailModal').style.display === 'block') {
+                        setTimeout(() => {
+                            showApplicationDetailById(id);
+                        }, 100);
+                    }
+                    
                     alert('予約が確定されました！Bot通知も送信されます。');
                 } else {
                     throw new Error(`API Error: ${response.status}`);
@@ -1415,6 +1444,35 @@
             } catch (error) {
                 console.error('予約確定に失敗しました:', error);
                 alert(`予約の確定に失敗しました: ${error.message}`);
+            }
+        }
+
+        // 詳細モーダルからのステータス変更処理
+        async function handleStatusChangeFromDetail(id, newStatus, selectElement) {
+            if (newStatus === '予約済み') {
+                // 元の値に戻す
+                const app = applications.find(app => app.id === id);
+                if (app) {
+                    selectElement.value = app.status;
+                }
+                // 詳細モーダルを閉じてから予約日時モーダルを表示
+                closeModal();
+                showReservationModal(id);
+            } else {
+                // 通常のステータス変更
+                await changeStatus(id, newStatus);
+                // 詳細モーダルの内容を更新
+                setTimeout(() => {
+                    showApplicationDetailById(id);
+                }, 100);
+            }
+        }
+
+        // IDで申込詳細を表示（モーダル更新用）
+        function showApplicationDetailById(id) {
+            const app = applications.find(app => app.id === id);
+            if (app) {
+                showApplicationDetail(app);
             }
         }
 
@@ -1468,13 +1526,51 @@
                     </div>
                     <div class="detail-row">
                         <div class="detail-label">ステータス</div>
-                        <div class="detail-value"><span class="status-badge status-${getStatusClass(app.status)}">${app.status}</span></div>
+                        <div class="detail-value">
+                            <select class="status-select-detail" onchange="handleStatusChangeFromDetail('${app.id}', this.value, this)">
+                                <option value="${app.status}">${app.status}</option>
+                                <option value="確認">確認</option>
+                                <option value="予約未決定">予約未決定</option>
+                                <option value="予約済み">予約済み</option>
+                                <option value="保留中">保留中</option>
+                                <option value="結果決定">結果決定</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="detail-row">
                         <div class="detail-label">教室</div>
                         <div class="detail-value">${app.classroom}</div>
                     </div>
                 </div>
+
+                ${app.status === '予約済み' && (app.reservationDate || app.reservationTime) ? `
+                <div class="detail-section">
+                    <h3>予約情報</h3>
+                    ${app.reservationDate ? `
+                    <div class="detail-row">
+                        <div class="detail-label">予約日</div>
+                        <div class="detail-value">${new Date(app.reservationDate).toLocaleDateString('ja-JP', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            weekday: 'short'
+                        })}</div>
+                    </div>
+                    ` : ''}
+                    ${app.reservationTime ? `
+                    <div class="detail-row">
+                        <div class="detail-label">予約時間</div>
+                        <div class="detail-value">${app.reservationTime}</div>
+                    </div>
+                    ` : ''}
+                    ${app.reservationNotes ? `
+                    <div class="detail-row">
+                        <div class="detail-label">備考</div>
+                        <div class="detail-value">${app.reservationNotes}</div>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
 
                 <div class="detail-section">
                     <h3>保護者情報</h3>
