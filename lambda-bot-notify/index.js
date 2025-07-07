@@ -13,8 +13,8 @@ let tokenExpiresAt = Date.now() + 3600 * 1000; // 1 hour from now
 async function refreshAccessToken() {
     return new Promise((resolve, reject) => {
         const data = JSON.stringify({
-            refreshToken: refreshToken,
-            grantType: 'refresh_token'
+            refresh_token: refreshToken,
+            grant_type: 'refresh_token'
         });
 
         const options = {
@@ -101,7 +101,12 @@ async function sendLinkMessage(applicationData) {
             res.on('end', () => {
                 if (res.statusCode === 200 || res.statusCode === 201) {
                     console.log('Message sent successfully:', responseData);
-                    resolve(JSON.parse(responseData));
+                    try {
+                        resolve(responseData ? JSON.parse(responseData) : { success: true });
+                    } catch (parseError) {
+                        console.log('Response parse warning:', parseError.message);
+                        resolve({ success: true, message: 'Message sent (empty response)' });
+                    }
                 } else {
                     reject(new Error(`Failed to send message: ${res.statusCode} - ${responseData}`));
                 }

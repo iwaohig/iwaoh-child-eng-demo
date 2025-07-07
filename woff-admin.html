@@ -633,6 +633,36 @@
             color: #333;
         }
 
+        .experience-info {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f3e5f5;
+            border-radius: 6px;
+            text-align: left;
+        }
+
+        .experience-info-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #7b1fa2;
+            margin-bottom: 8px;
+        }
+
+        .experience-detail {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .experience-text {
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+            line-height: 1.4;
+            border-left: 3px solid #7b1fa2;
+        }
+
         .notify-badge {
             background: #ff6b6b;
             color: white;
@@ -901,6 +931,77 @@
                     <div class="modal-actions">
                         <button type="button" class="btn-cancel" onclick="closeReservationModal()">キャンセル</button>
                         <button type="button" class="btn-confirm" onclick="confirmReservation()">予約確定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 体験時の様子入力モーダル -->
+    <div id="experienceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">体験時の様子入力</div>
+                <div class="close" onclick="closeExperienceModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="experience-form">
+                    <div class="form-group">
+                        <label>申込者情報</label>
+                        <div id="experienceApplicantInfo" class="applicant-info"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experienceDate">体験日 <span class="required">*</span></label>
+                        <input type="date" id="experienceDate" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experienceTime">体験時間 <span class="required">*</span></label>
+                        <select id="experienceTime" class="form-input" required>
+                            <option value="">時間を選択してください</option>
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experienceDetails">体験時の様子 <span class="required">*</span></label>
+                        <textarea id="experienceDetails" class="form-input" rows="5" placeholder="お子様の体験時の様子、反応、学習状況などを詳しく記入してください" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experienceRating">体験評価</label>
+                        <select id="experienceRating" class="form-input">
+                            <option value="">評価を選択してください</option>
+                            <option value="非常に良い">非常に良い</option>
+                            <option value="良い">良い</option>
+                            <option value="普通">普通</option>
+                            <option value="要改善">要改善</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experienceNotes">追加メモ</label>
+                        <textarea id="experienceNotes" class="form-input" rows="3" placeholder="今後の対応や特記事項があれば記入してください"></textarea>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeExperienceModal()">キャンセル</button>
+                        <button type="button" class="btn-confirm" onclick="confirmExperience()">体験記録を保存</button>
                     </div>
                 </div>
             </div>
@@ -1292,6 +1393,7 @@
                             <option value="確認">確認</option>
                             <option value="予約未決定">予約未決定</option>
                             <option value="予約済み">予約済み</option>
+                            <option value="体験済み">体験済み</option>
                             <option value="保留中">保留中</option>
                             <option value="結果決定">結果決定</option>
                         </select>
@@ -1374,6 +1476,14 @@
                 }
                 // 予約日時モーダルを表示
                 showReservationModal(id);
+            } else if (newStatus === '体験済み') {
+                // 元の値に戻す
+                const app = applications.find(app => app.id === id);
+                if (app) {
+                    selectElement.value = app.status;
+                }
+                // 体験記録モーダルを表示
+                showExperienceModal(id);
             } else {
                 // 通常のステータス変更
                 await changeStatus(id, newStatus);
@@ -1486,6 +1596,120 @@
             }
         }
 
+        // 体験モーダル表示
+        function showExperienceModal(id) {
+            const app = applications.find(app => app.id === id);
+            if (!app) {
+                alert('申込データが見つかりません');
+                return;
+            }
+
+            // 申込者情報を表示
+            document.getElementById('experienceApplicantInfo').innerHTML = `
+                <strong>${app.child.lastName} ${app.child.firstName}</strong> さん<br>
+                保護者: ${app.parent.lastName} ${app.parent.firstName} 様<br>
+                教室: ${app.classroom}
+            `;
+
+            // 今日の日付を最大値に設定
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('experienceDate').max = today;
+
+            // フォームをリセット
+            document.getElementById('experienceDate').value = '';
+            document.getElementById('experienceTime').value = '';
+            document.getElementById('experienceDetails').value = '';
+            document.getElementById('experienceRating').value = '';
+            document.getElementById('experienceNotes').value = '';
+
+            // モーダルにIDを保存
+            document.getElementById('experienceModal').dataset.applicationId = id;
+            
+            // モーダルを表示
+            document.getElementById('experienceModal').style.display = 'block';
+        }
+
+        // 体験モーダルを閉じる
+        function closeExperienceModal() {
+            document.getElementById('experienceModal').style.display = 'none';
+        }
+
+        // 体験記録を確定
+        async function confirmExperience() {
+            const id = document.getElementById('experienceModal').dataset.applicationId;
+            const date = document.getElementById('experienceDate').value;
+            const time = document.getElementById('experienceTime').value;
+            const details = document.getElementById('experienceDetails').value;
+            const rating = document.getElementById('experienceRating').value;
+            const notes = document.getElementById('experienceNotes').value;
+
+            // バリデーション
+            if (!date || !time || !details.trim()) {
+                alert('体験日、体験時間、体験時の様子は必須項目です');
+                return;
+            }
+
+            // 体験データを含めてステータス更新
+            try {
+                const url = `https://im1swit6p3.execute-api.ap-northeast-1.amazonaws.com/prod/admin/applications/${id}`;
+                const requestBody = { 
+                    status: '体験済み',
+                    experienceDate: date,
+                    experienceTime: time,
+                    experienceDetails: details,
+                    experienceRating: rating || '',
+                    experienceNotes: notes || ''
+                };
+                
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (response.ok) {
+                    // ローカルデータも更新
+                    const app = applications.find(app => app.id === id);
+                    if (app) {
+                        app.status = '体験済み';
+                        app.experienceDate = date;
+                        app.experienceTime = time;
+                        app.experienceDetails = details;
+                        app.experienceRating = rating;
+                        app.experienceNotes = notes;
+                        app.updatedAt = new Date().toISOString();
+                    }
+                    
+                    updateStats();
+                    renderApplicationsList();
+                    closeExperienceModal();
+                    
+                    // 詳細モーダルが開いている場合は更新
+                    if (document.getElementById('detailModal').style.display === 'block') {
+                        setTimeout(() => {
+                            showApplicationDetailById(id);
+                        }, 100);
+                    }
+                    
+                    // 詳細表示モード（Bot URL経由）の場合は詳細ビューを更新
+                    if (document.body.classList.contains('detail-mode')) {
+                        setTimeout(() => {
+                            displayDetailView(app);
+                        }, 100);
+                    }
+                    
+                    alert('体験記録が保存されました！Bot通知も送信されます。');
+                } else {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('体験記録の保存に失敗しました:', error);
+                alert(`体験記録の保存に失敗しました: ${error.message}`);
+            }
+        }
+
         // 詳細モーダルからのステータス変更処理
         async function handleStatusChangeFromDetail(id, newStatus, selectElement) {
             if (newStatus === '予約済み') {
@@ -1497,6 +1721,15 @@
                 // 詳細モーダルを閉じてから予約日時モーダルを表示
                 closeModal();
                 showReservationModal(id);
+            } else if (newStatus === '体験済み') {
+                // 元の値に戻す
+                const app = applications.find(app => app.id === id);
+                if (app) {
+                    selectElement.value = app.status;
+                }
+                // 詳細モーダルを閉じてから体験記録モーダルを表示
+                closeModal();
+                showExperienceModal(id);
             } else {
                 // 通常のステータス変更
                 await changeStatus(id, newStatus);
@@ -1698,6 +1931,7 @@
                             <option value="確認">確認</option>
                             <option value="予約未決定">予約未決定</option>
                             <option value="予約済み">予約済み</option>
+                            <option value="体験済み">体験済み</option>
                             <option value="保留中">保留中</option>
                             <option value="結果決定">結果決定</option>
                         </select>
@@ -1716,6 +1950,27 @@
                                 })} ${app.reservationTime}
                             </div>
                             ${app.reservationNotes ? `<div class="reservation-detail"><strong>備考:</strong> ${app.reservationNotes}</div>` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                    ${app.status === '体験済み' && app.experienceDate && app.experienceTime && app.experienceDetails ? `
+                    <div class="experience-info">
+                        <div class="experience-info-label">体験記録</div>
+                        <div class="experience-info-content">
+                            <div class="experience-detail">
+                                <strong>体験日時:</strong> ${new Date(app.experienceDate).toLocaleDateString('ja-JP', {
+                                    year: 'numeric',
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    weekday: 'short'
+                                })} ${app.experienceTime}
+                            </div>
+                            <div class="experience-detail">
+                                <strong>体験時の様子:</strong><br>
+                                <div class="experience-text">${app.experienceDetails}</div>
+                            </div>
+                            ${app.experienceRating ? `<div class="experience-detail"><strong>評価:</strong> ${app.experienceRating}</div>` : ''}
+                            ${app.experienceNotes ? `<div class="experience-detail"><strong>追加メモ:</strong> ${app.experienceNotes}</div>` : ''}
                         </div>
                     </div>
                     ` : ''}
@@ -1799,6 +2054,11 @@
                 document.getElementById('detailStatusSelect').value = app.status;
                 // 予約日時モーダルを表示
                 showReservationModal(id);
+            } else if (newStatus === '体験済み') {
+                // 元の値に戻す
+                document.getElementById('detailStatusSelect').value = app.status;
+                // 体験記録モーダルを表示
+                showExperienceModal(id);
             } else {
                 // 通常のステータス変更
                 try {

@@ -363,6 +363,32 @@ Resources:
                           expressionAttributeValues[':reservationNotes'] = body.reservationNotes;
                       }
                       
+                      // 体験記録フィールドがある場合は追加
+                      if (body.experienceDate) {
+                          updateExpression += ', experienceDate = :experienceDate';
+                          expressionAttributeValues[':experienceDate'] = body.experienceDate;
+                      }
+                      
+                      if (body.experienceTime) {
+                          updateExpression += ', experienceTime = :experienceTime';
+                          expressionAttributeValues[':experienceTime'] = body.experienceTime;
+                      }
+                      
+                      if (body.experienceDetails) {
+                          updateExpression += ', experienceDetails = :experienceDetails';
+                          expressionAttributeValues[':experienceDetails'] = body.experienceDetails;
+                      }
+                      
+                      if (body.experienceRating !== undefined) {
+                          updateExpression += ', experienceRating = :experienceRating';
+                          expressionAttributeValues[':experienceRating'] = body.experienceRating;
+                      }
+                      
+                      if (body.experienceNotes !== undefined) {
+                          updateExpression += ', experienceNotes = :experienceNotes';
+                          expressionAttributeValues[':experienceNotes'] = body.experienceNotes;
+                      }
+                      
                       const params = {
                           TableName: process.env.APPLICATIONS_TABLE,
                           Key: marshall({ id }),
@@ -524,6 +550,27 @@ Resources:
                           statusMessage += `\n備考: ${applicationData.reservationNotes}`;
                       }
                       linkText = '予約詳細を確認';
+                  } else if (applicationData.status === '体験済み' && applicationData.experienceDate && applicationData.experienceTime) {
+                      const experienceDate = new Date(applicationData.experienceDate);
+                      const formattedDate = experienceDate.toLocaleDateString('ja-JP', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          weekday: 'short'
+                      });
+                      statusMessage += `\n体験日時: ${formattedDate} ${applicationData.experienceTime}`;
+                      
+                      if (applicationData.experienceDetails) {
+                          const truncatedDetails = applicationData.experienceDetails.length > 50 
+                              ? applicationData.experienceDetails.substring(0, 50) + '...'
+                              : applicationData.experienceDetails;
+                          statusMessage += `\n体験の様子: ${truncatedDetails}`;
+                      }
+                      
+                      if (applicationData.experienceRating) {
+                          statusMessage += `\n評価: ${applicationData.experienceRating}`;
+                      }
+                      linkText = '体験記録を確認';
                   } else {
                       linkText = 'ステータス確認';
                   }
@@ -661,7 +708,12 @@ Resources:
                                       oldStatus: oldStatus,
                                       reservationDate: newImage.reservationDate ? newImage.reservationDate.S : '',
                                       reservationTime: newImage.reservationTime ? newImage.reservationTime.S : '',
-                                      reservationNotes: newImage.reservationNotes ? newImage.reservationNotes.S : ''
+                                      reservationNotes: newImage.reservationNotes ? newImage.reservationNotes.S : '',
+                                      experienceDate: newImage.experienceDate ? newImage.experienceDate.S : '',
+                                      experienceTime: newImage.experienceTime ? newImage.experienceTime.S : '',
+                                      experienceDetails: newImage.experienceDetails ? newImage.experienceDetails.S : '',
+                                      experienceRating: newImage.experienceRating ? newImage.experienceRating.S : '',
+                                      experienceNotes: newImage.experienceNotes ? newImage.experienceNotes.S : ''
                                   };
                                   
                                   console.log('Sending status change notification');
