@@ -35,6 +35,12 @@ Parameters:
     NoEcho: true
     Description: 'LINE WORKS Bot Client Secret'
     Default: '0OldwPrBU_'
+  
+  BotChannelId:
+    Type: String
+    NoEcho: true
+    Description: 'LINE WORKS Bot Channel ID (Talk Room ID)'
+    Default: '05a3d91c-c172-893a-e6d3-3bd1e0ce1920'
 
 Resources:
   # DynamoDB Table for Applications
@@ -448,7 +454,7 @@ Resources:
       Environment:
         Variables:
           BOT_ID: '10248294'
-          USER_ID: 'iwao.higashimoto@works-demo.org'
+          CHANNEL_ID: !Ref BotChannelId
           ACCESS_TOKEN: !Ref BotAccessToken
           REFRESH_TOKEN: !Ref BotRefreshToken
           CLIENT_ID: !Ref BotClientId
@@ -458,7 +464,7 @@ Resources:
           const https = require('https');
           
           const BOT_ID = process.env.BOT_ID;
-          const USER_ID = process.env.USER_ID;
+          const CHANNEL_ID = process.env.CHANNEL_ID;
           let accessToken = process.env.ACCESS_TOKEN;
           const refreshToken = process.env.REFRESH_TOKEN;
           const clientId = process.env.CLIENT_ID;
@@ -592,7 +598,7 @@ Resources:
           
                   const options = {
                       hostname: 'www.worksapis.com',
-                      path: `/v1.0/bots/${BOT_ID}/users/${encodeURIComponent(USER_ID)}/messages`,
+                      path: `/v1.0/bots/${BOT_ID}/channels/${encodeURIComponent(CHANNEL_ID)}/messages`,
                       method: 'POST',
                       headers: {
                           'Authorization': `Bearer ${accessToken}`,
