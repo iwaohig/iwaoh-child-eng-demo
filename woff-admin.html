@@ -612,6 +612,27 @@
             min-width: 80px;
         }
 
+        .reservation-info {
+            margin-top: 16px;
+            padding: 12px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            text-align: left;
+        }
+
+        .reservation-info-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+
+        .reservation-detail {
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: #333;
+        }
+
         .notify-badge {
             background: #ff6b6b;
             color: white;
@@ -996,12 +1017,17 @@
 
             console.log('最終URLパラメータ:', { view, id, mode });
             console.log('view:', view, 'id:', id, 'mode:', mode);
+            console.log('Current URL:', window.location.href);
+            console.log('Search params:', window.location.search);
+            console.log('Hash:', window.location.hash);
 
             if (view === 'detail' && id) {
                 // 詳細表示モード
+                console.log('Starting detail mode for ID:', id);
                 showDetailMode(id, mode);
             } else {
                 // 通常の一覧表示モード
+                console.log('Starting list mode - no valid detail parameters found');
                 showListMode();
             }
         }
@@ -1074,12 +1100,18 @@
 
                 // 指定されたIDの申込を検索
                 const targetApp = applications.find(app => app.id === id);
+                console.log('Looking for application with ID:', id);
+                console.log('Total applications loaded:', applications.length);
+                console.log('Available application IDs:', applications.map(app => app.id));
                 console.log('Found application:', targetApp);
+                
                 if (targetApp) {
+                    console.log('Displaying detail view for application:', targetApp.id);
                     displayDetailView(targetApp, mode);
                 } else {
-                    console.log('Application not found for id:', id);
-                    showErrorMessage('指定された申込が見つかりません');
+                    console.error('Application not found for id:', id);
+                    console.error('Available applications:', applications);
+                    showErrorMessage(`指定された申込が見つかりません (ID: ${id})`);
                 }
             } catch (error) {
                 console.error('データの読み込みに失敗しました:', error);
@@ -1437,6 +1469,13 @@
                         }, 100);
                     }
                     
+                    // 詳細表示モード（Bot URL経由）の場合は詳細ビューを更新
+                    if (document.body.classList.contains('detail-mode')) {
+                        setTimeout(() => {
+                            displayDetailView(app);
+                        }, 100);
+                    }
+                    
                     alert('予約が確定されました！Bot通知も送信されます。');
                 } else {
                     throw new Error(`API Error: ${response.status}`);
@@ -1664,6 +1703,22 @@
                         </select>
                         <button class="detail-status-update-btn" onclick="updateDetailStatus('${app.id}')">更新</button>
                     </div>
+                    ${app.status === '予約済み' && app.reservationDate && app.reservationTime ? `
+                    <div class="reservation-info">
+                        <div class="reservation-info-label">予約情報</div>
+                        <div class="reservation-info-content">
+                            <div class="reservation-detail">
+                                <strong>予約日時:</strong> ${new Date(app.reservationDate).toLocaleDateString('ja-JP', {
+                                    year: 'numeric',
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    weekday: 'short'
+                                })} ${app.reservationTime}
+                            </div>
+                            ${app.reservationNotes ? `<div class="reservation-detail"><strong>備考:</strong> ${app.reservationNotes}</div>` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <div class="detail-section">
@@ -1739,13 +1794,21 @@
                 return;
             }
 
-            try {
-                await changeStatus(id, newStatus);
-                // 詳細画面を再描画
-                app.status = newStatus;
-                displayDetailView(app);
-            } catch (error) {
-                console.error('ステータス更新エラー:', error);
+            if (newStatus === '予約済み') {
+                // 元の値に戻す
+                document.getElementById('detailStatusSelect').value = app.status;
+                // 予約日時モーダルを表示
+                showReservationModal(id);
+            } else {
+                // 通常のステータス変更
+                try {
+                    await changeStatus(id, newStatus);
+                    // 詳細画面を再描画
+                    app.status = newStatus;
+                    displayDetailView(app);
+                } catch (error) {
+                    console.error('ステータス更新エラー:', error);
+                }
             }
         }
 
