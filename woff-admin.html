@@ -663,6 +663,248 @@
             border-left: 3px solid #7b1fa2;
         }
 
+        .experience-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .btn-detail-experience {
+            background: #7b1fa2;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-detail-experience:hover {
+            background: #6a1b9a;
+        }
+
+        .experience-summary {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .experience-date-time, .experience-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .experience-icon {
+            font-size: 16px;
+        }
+
+        .experience-preview {
+            margin-top: 12px;
+        }
+
+        .experience-preview-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #7b1fa2;
+            margin-bottom: 6px;
+        }
+
+        .experience-text-preview {
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            line-height: 1.4;
+            border-left: 3px solid #7b1fa2;
+            font-size: 14px;
+        }
+
+        .read-more-hint {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* 詳細モーダル用スタイル */
+        .modal-content-large {
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .experience-detail-content {
+            padding: 0;
+        }
+
+        .experience-detail-header {
+            background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            margin: -16px -16px 20px -16px;
+        }
+
+        .applicant-summary h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.3em;
+        }
+
+        .applicant-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            opacity: 0.9;
+            flex-wrap: wrap;
+        }
+
+        .experience-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .experience-detail-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .experience-observations {
+            grid-column: 1 / -1;
+        }
+
+        .card-header {
+            background: #f5f5f5;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .card-icon {
+            font-size: 18px;
+        }
+
+        .card-header h4 {
+            margin: 0;
+            font-size: 1em;
+            color: #333;
+        }
+
+        .card-content {
+            padding: 16px;
+        }
+
+        .experience-datetime {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .experience-time {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #7b1fa2;
+        }
+
+        .rating-display {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .rating-excellent {
+            background: #4caf50;
+            color: white;
+        }
+
+        .rating-good {
+            background: #8bc34a;
+            color: white;
+        }
+
+        .rating-normal {
+            background: #ffc107;
+            color: black;
+        }
+
+        .rating-needs-improvement {
+            background: #ff9800;
+            color: white;
+        }
+
+        .experience-full-text {
+            line-height: 1.6;
+            font-size: 1em;
+            white-space: pre-wrap;
+            background: #fafafa;
+            padding: 16px;
+            border-radius: 6px;
+            border-left: 4px solid #7b1fa2;
+        }
+
+        .experience-notes {
+            line-height: 1.5;
+            font-size: 0.95em;
+            color: #555;
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #9c27b0;
+        }
+
+        .experience-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-primary {
+            background: #7b1fa2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #6a1b9a;
+        }
+
+        /* 体験済みステータス用スタイル */
+        .status-experienced {
+            background: #7b1fa2;
+            color: white;
+        }
+
         .notify-badge {
             background: #ff6b6b;
             color: white;
@@ -1003,6 +1245,21 @@
                         <button type="button" class="btn-cancel" onclick="closeExperienceModal()">キャンセル</button>
                         <button type="button" class="btn-confirm" onclick="confirmExperience()">体験記録を保存</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 体験記録詳細表示モーダル -->
+    <div id="experienceDetailModal" class="modal">
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">
+                <div class="modal-title">📝 体験記録詳細</div>
+                <div class="close" onclick="closeExperienceDetailModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div id="experienceDetailContent" class="experience-detail-content">
+                    <!-- コンテンツはJavaScriptで動的に生成 -->
                 </div>
             </div>
         </div>
@@ -1411,9 +1668,21 @@
                 case '確認': return 'confirmed';
                 case '予約未決定': return 'pending';
                 case '予約済み': return 'reserved';
+                case '体験済み': return 'experienced';
                 case '保留中': return 'on-hold';
                 case '結果決定': return 'decided';
                 default: return 'confirmed';
+            }
+        }
+
+        // 評価アイコンを取得
+        function getRatingIcon(rating) {
+            switch(rating) {
+                case '非常に良い': return '🌟';
+                case '良い': return '⭐';
+                case '普通': return '📝';
+                case '要改善': return '📋';
+                default: return '📝';
             }
         }
 
@@ -1710,6 +1979,196 @@
             }
         }
 
+        // 体験記録詳細モーダル表示
+        function showExperienceDetailModal(id) {
+            const app = applications.find(app => app.id === id);
+            if (!app || app.status !== '体験済み') {
+                alert('体験記録が見つかりません');
+                return;
+            }
+
+            const content = document.getElementById('experienceDetailContent');
+            content.innerHTML = `
+                <div class="experience-detail-header">
+                    <div class="applicant-summary">
+                        <h3>${app.child.lastName} ${app.child.firstName} さんの体験記録</h3>
+                        <div class="applicant-meta">
+                            <span>保護者: ${app.parent.lastName} ${app.parent.firstName} 様</span>
+                            <span>教室: ${app.classroom}</span>
+                            <span>申込ID: ${app.id}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="experience-detail-grid">
+                    <div class="experience-detail-card">
+                        <div class="card-header">
+                            <span class="card-icon">📅</span>
+                            <h4>体験日時</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="experience-datetime">
+                                ${new Date(app.experienceDate).toLocaleDateString('ja-JP', {
+                                    year: 'numeric',
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    weekday: 'long'
+                                })}
+                            </div>
+                            <div class="experience-time">${app.experienceTime}</div>
+                        </div>
+                    </div>
+
+                    ${app.experienceRating ? `
+                    <div class="experience-detail-card">
+                        <div class="card-header">
+                            <span class="card-icon">${getRatingIcon(app.experienceRating)}</span>
+                            <h4>総合評価</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="rating-display ${getRatingClass(app.experienceRating)}">${app.experienceRating}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="experience-detail-card experience-observations">
+                    <div class="card-header">
+                        <span class="card-icon">👁️</span>
+                        <h4>体験時の様子・観察記録</h4>
+                    </div>
+                    <div class="card-content">
+                        <div class="experience-full-text">${app.experienceDetails.replace(/\n/g, '<br>')}</div>
+                    </div>
+                </div>
+
+                ${app.experienceNotes ? `
+                <div class="experience-detail-card">
+                    <div class="card-header">
+                        <span class="card-icon">📝</span>
+                        <h4>追加メモ・今後の対応</h4>
+                    </div>
+                    <div class="card-content">
+                        <div class="experience-notes">${app.experienceNotes.replace(/\n/g, '<br>')}</div>
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="experience-actions">
+                    <button class="btn btn-secondary" onclick="printExperienceRecord('${app.id}')">📄 記録を印刷</button>
+                    <button class="btn btn-primary" onclick="editExperienceRecord('${app.id}')">✏️ 記録を編集</button>
+                </div>
+            `;
+
+            document.getElementById('experienceDetailModal').style.display = 'block';
+        }
+
+        // 体験記録詳細モーダルを閉じる
+        function closeExperienceDetailModal() {
+            document.getElementById('experienceDetailModal').style.display = 'none';
+        }
+
+        // 評価のCSSクラスを取得
+        function getRatingClass(rating) {
+            switch(rating) {
+                case '非常に良い': return 'rating-excellent';
+                case '良い': return 'rating-good';
+                case '普通': return 'rating-normal';
+                case '要改善': return 'rating-needs-improvement';
+                default: return 'rating-normal';
+            }
+        }
+
+        // 体験記録印刷
+        function printExperienceRecord(id) {
+            const app = applications.find(app => app.id === id);
+            if (!app) return;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>体験記録 - ${app.child.lastName} ${app.child.firstName}</title>
+                        <style>
+                            body { font-family: 'MS PGothic', sans-serif; margin: 20px; line-height: 1.6; }
+                            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+                            .section { margin-bottom: 20px; }
+                            .label { font-weight: bold; color: #555; }
+                            .content { background: #f9f9f9; padding: 10px; border-left: 3px solid #7b1fa2; margin-top: 5px; }
+                            .datetime { font-size: 1.1em; font-weight: bold; }
+                            .rating { display: inline-block; padding: 5px 15px; border-radius: 15px; font-weight: bold; }
+                            .rating-excellent { background: #4caf50; color: white; }
+                            .rating-good { background: #8bc34a; color: white; }
+                            .rating-normal { background: #ffc107; color: black; }
+                            .rating-needs-improvement { background: #ff9800; color: white; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>🎓 体験記録</h1>
+                            <h2>${app.child.lastName} ${app.child.firstName} さん</h2>
+                            <p>保護者: ${app.parent.lastName} ${app.parent.firstName} 様 | 教室: ${app.classroom}</p>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="label">📅 体験日時</div>
+                            <div class="content datetime">
+                                ${new Date(app.experienceDate).toLocaleDateString('ja-JP', {
+                                    year: 'numeric',
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    weekday: 'long'
+                                })} ${app.experienceTime}
+                            </div>
+                        </div>
+
+                        ${app.experienceRating ? `
+                        <div class="section">
+                            <div class="label">⭐ 総合評価</div>
+                            <div class="content">
+                                <span class="rating ${getRatingClass(app.experienceRating)}">${app.experienceRating}</span>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        <div class="section">
+                            <div class="label">👁️ 体験時の様子・観察記録</div>
+                            <div class="content">${app.experienceDetails.replace(/\n/g, '<br>')}</div>
+                        </div>
+
+                        ${app.experienceNotes ? `
+                        <div class="section">
+                            <div class="label">📝 追加メモ・今後の対応</div>
+                            <div class="content">${app.experienceNotes.replace(/\n/g, '<br>')}</div>
+                        </div>
+                        ` : ''}
+
+                        <div style="margin-top: 40px; text-align: right; font-size: 0.9em; color: #666;">
+                            印刷日時: ${new Date().toLocaleString('ja-JP')}
+                        </div>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // 体験記録編集
+        function editExperienceRecord(id) {
+            closeExperienceDetailModal();
+            showExperienceModal(id);
+            
+            // 既存データを入力フィールドに設定
+            const app = applications.find(app => app.id === id);
+            if (app) {
+                document.getElementById('experienceDate').value = app.experienceDate || '';
+                document.getElementById('experienceTime').value = app.experienceTime || '';
+                document.getElementById('experienceDetails').value = app.experienceDetails || '';
+                document.getElementById('experienceRating').value = app.experienceRating || '';
+                document.getElementById('experienceNotes').value = app.experienceNotes || '';
+            }
+        }
+
         // 詳細モーダルからのステータス変更処理
         async function handleStatusChangeFromDetail(id, newStatus, selectElement) {
             if (newStatus === '予約済み') {
@@ -1955,22 +2414,33 @@
                     ` : ''}
                     ${app.status === '体験済み' && app.experienceDate && app.experienceTime && app.experienceDetails ? `
                     <div class="experience-info">
-                        <div class="experience-info-label">体験記録</div>
+                        <div class="experience-info-header">
+                            <div class="experience-info-label">📝 体験記録</div>
+                            <button class="btn-detail-experience" onclick="showExperienceDetailModal('${app.id}')">詳細を表示</button>
+                        </div>
                         <div class="experience-info-content">
-                            <div class="experience-detail">
-                                <strong>体験日時:</strong> ${new Date(app.experienceDate).toLocaleDateString('ja-JP', {
-                                    year: 'numeric',
-                                    month: 'long', 
-                                    day: 'numeric',
-                                    weekday: 'short'
-                                })} ${app.experienceTime}
+                            <div class="experience-summary">
+                                <div class="experience-date-time">
+                                    <span class="experience-icon">📅</span>
+                                    <strong>${new Date(app.experienceDate).toLocaleDateString('ja-JP', {
+                                        year: 'numeric',
+                                        month: 'long', 
+                                        day: 'numeric',
+                                        weekday: 'short'
+                                    })} ${app.experienceTime}</strong>
+                                </div>
+                                ${app.experienceRating ? `
+                                <div class="experience-rating">
+                                    <span class="experience-icon">${getRatingIcon(app.experienceRating)}</span>
+                                    <strong>評価: ${app.experienceRating}</strong>
+                                </div>
+                                ` : ''}
                             </div>
-                            <div class="experience-detail">
-                                <strong>体験時の様子:</strong><br>
-                                <div class="experience-text">${app.experienceDetails}</div>
+                            <div class="experience-preview">
+                                <div class="experience-preview-label">体験時の様子（概要）</div>
+                                <div class="experience-text-preview">${app.experienceDetails.length > 100 ? app.experienceDetails.substring(0, 100) + '...' : app.experienceDetails}</div>
+                                ${app.experienceDetails.length > 100 ? '<div class="read-more-hint">💡 詳細を表示ボタンで全文を確認できます</div>' : ''}
                             </div>
-                            ${app.experienceRating ? `<div class="experience-detail"><strong>評価:</strong> ${app.experienceRating}</div>` : ''}
-                            ${app.experienceNotes ? `<div class="experience-detail"><strong>追加メモ:</strong> ${app.experienceNotes}</div>` : ''}
                         </div>
                     </div>
                     ` : ''}
