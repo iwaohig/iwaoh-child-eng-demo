@@ -100,6 +100,13 @@
             gap: 12px;
         }
 
+        @media (min-width: 768px) {
+            .filter-row {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
         .filter-item {
             display: flex;
             flex-direction: column;
@@ -903,6 +910,500 @@
         .status-experienced {
             background: #7b1fa2;
             color: white;
+        }
+
+        /* モバイル最適化 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 8px;
+            }
+
+            .header {
+                padding: 16px 0;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .header p {
+                font-size: 12px;
+            }
+
+            /* 統計カード */
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .stat-card {
+                padding: 12px 8px;
+                border-radius: 8px;
+            }
+
+            .stat-card h3 {
+                font-size: 11px;
+            }
+
+            .stat-card .number {
+                font-size: 20px;
+            }
+
+            /* フィルターセクション */
+            .filter-section {
+                padding: 12px;
+                margin-bottom: 12px;
+                border-radius: 8px;
+            }
+
+            .filter-row {
+                gap: 8px;
+            }
+
+            .filter-select {
+                padding: 12px;
+                font-size: 16px; /* iOS zoom防止 */
+                border-radius: 8px;
+            }
+
+            /* 申込リスト */
+            .application-item {
+                padding: 12px;
+                margin-bottom: 8px;
+                border-radius: 8px;
+            }
+
+            .application-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .application-title {
+                font-size: 16px;
+                line-height: 1.3;
+            }
+
+            .application-meta {
+                flex-direction: column;
+                gap: 4px;
+                align-items: flex-start;
+            }
+
+            .meta-item {
+                font-size: 12px;
+            }
+
+            .application-actions {
+                margin-top: 12px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .status-select {
+                min-width: 120px;
+                padding: 8px 12px;
+                font-size: 16px; /* iOS zoom防止 */
+                border-radius: 6px;
+            }
+
+            .btn-detail {
+                padding: 8px 16px;
+                font-size: 14px;
+                border-radius: 6px;
+                min-height: 44px; /* タッチターゲット */
+            }
+
+            /* 詳細ビュー */
+            .detail-status-section {
+                padding: 12px;
+                margin-bottom: 16px;
+                text-align: left;
+            }
+
+            .detail-status-actions {
+                flex-direction: column;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            .detail-status-select {
+                padding: 12px 16px;
+                font-size: 16px; /* iOS zoom防止 */
+                border-radius: 8px;
+            }
+
+            .detail-status-update-btn {
+                padding: 14px 24px;
+                font-size: 16px;
+                border-radius: 8px;
+                min-height: 44px; /* タッチターゲット */
+            }
+
+            /* 体験記録表示 */
+            .experience-info-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .btn-detail-experience {
+                padding: 10px 16px;
+                font-size: 14px;
+                min-height: 44px; /* タッチターゲット */
+                border-radius: 8px;
+            }
+
+            .experience-summary {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .experience-date-time, .experience-rating {
+                justify-content: flex-start;
+            }
+
+            /* 詳細セクション */
+            .detail-section {
+                margin-bottom: 16px;
+                padding: 12px;
+                border-radius: 8px;
+            }
+
+            .detail-section h3 {
+                font-size: 16px;
+                margin-bottom: 12px;
+            }
+
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+                margin-bottom: 12px;
+            }
+
+            .detail-label {
+                font-size: 12px;
+                font-weight: 600;
+                color: #666;
+            }
+
+            .detail-value {
+                font-size: 14px;
+                font-weight: normal;
+            }
+
+            /* 空の状態 */
+            .empty-state {
+                padding: 40px 20px;
+            }
+
+            .empty-state-icon {
+                font-size: 48px;
+            }
+
+            .empty-state-text {
+                font-size: 16px;
+            }
+
+            .empty-state-subtext {
+                font-size: 14px;
+                margin-top: 12px;
+            }
+        }
+
+        /* モーダル最適化 */
+        @media (max-width: 768px) {
+            .modal {
+                padding: 0;
+                background-color: rgba(0,0,0,0.8);
+            }
+
+            .modal-content {
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                margin: 0;
+                border-radius: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .modal-content-large {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .modal-header {
+                padding: 16px;
+                position: sticky;
+                top: 0;
+                background: white;
+                z-index: 10;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .modal-title {
+                font-size: 18px;
+            }
+
+            .close {
+                font-size: 28px;
+                width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal-body {
+                padding: 16px;
+                padding-bottom: 80px; /* スクロール余白 */
+            }
+
+            /* フォーム要素 */
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-group label {
+                font-size: 14px;
+                margin-bottom: 6px;
+                display: block;
+            }
+
+            .form-input {
+                padding: 12px 16px;
+                font-size: 16px; /* iOS zoom防止 */
+                border-radius: 8px;
+                width: 100%;
+                min-height: 44px; /* タッチターゲット */
+            }
+
+            .form-input textarea {
+                min-height: 120px;
+                resize: vertical;
+            }
+
+            /* モーダルアクション */
+            .modal-actions {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 16px;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                display: flex;
+                gap: 12px;
+                z-index: 20;
+            }
+
+            .btn-cancel, .btn-confirm {
+                flex: 1;
+                padding: 14px 20px;
+                font-size: 16px;
+                border-radius: 8px;
+                min-height: 44px;
+                font-weight: 600;
+            }
+
+            /* 体験詳細モーダル */
+            .experience-detail-header {
+                margin: -16px -16px 20px -16px;
+                padding: 20px 16px;
+            }
+
+            .applicant-summary h3 {
+                font-size: 1.2em;
+                line-height: 1.3;
+            }
+
+            .applicant-meta {
+                flex-direction: column;
+                gap: 6px;
+                font-size: 0.85em;
+            }
+
+            .experience-detail-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .experience-detail-card {
+                border-radius: 8px;
+            }
+
+            .card-header {
+                padding: 12px;
+            }
+
+            .card-header h4 {
+                font-size: 0.95em;
+            }
+
+            .card-content {
+                padding: 12px;
+            }
+
+            .experience-actions {
+                position: relative;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .btn {
+                padding: 14px 20px;
+                font-size: 16px;
+                min-height: 44px;
+                border-radius: 8px;
+            }
+        }
+
+        /* 非常に小さな画面 (iPhone SE等) */
+        @media (max-width: 375px) {
+            .container {
+                padding: 4px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+
+            .application-title {
+                font-size: 15px;
+            }
+
+            .meta-item {
+                font-size: 11px;
+            }
+
+            .application-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .status-select {
+                min-width: auto;
+            }
+
+            .experience-summary {
+                gap: 6px;
+            }
+
+            .experience-icon {
+                font-size: 14px;
+            }
+        }
+
+        /* タッチ操作最適化 */
+        @media (hover: none) and (pointer: coarse) {
+            /* タッチデバイス専用スタイル */
+            .application-item {
+                position: relative;
+                transition: transform 0.1s ease;
+                cursor: pointer;
+            }
+
+            .application-item:active {
+                transform: scale(0.98);
+                background-color: #f0f7ff;
+            }
+
+            .btn-detail:active,
+            .status-select:active,
+            .btn-detail-experience:active {
+                transform: scale(0.95);
+            }
+
+            /* スワイプ時のフィードバック */
+            .application-item.swiping {
+                transition: transform 0.3s ease;
+            }
+
+            /* タッチターゲットの拡大 */
+            .status-select,
+            .btn-detail,
+            .btn-detail-experience,
+            .detail-status-update-btn,
+            .btn-cancel,
+            .btn-confirm {
+                min-height: 44px;
+                min-width: 44px;
+                position: relative;
+            }
+
+            /* フォーカス状態の改善 */
+            .form-input:focus {
+                outline: 2px solid #00c3f7;
+                outline-offset: 2px;
+                box-shadow: 0 0 0 3px rgba(0, 195, 247, 0.1);
+            }
+        }
+
+        /* プルトゥリフレッシュ対応 */
+        .pull-to-refresh {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 14px;
+            border-radius: 0 0 12px 12px;
+            margin-bottom: 16px;
+            transform: translateY(-60px);
+            transition: transform 0.3s ease;
+        }
+
+        .pull-to-refresh.active {
+            transform: translateY(0);
+        }
+
+        .pull-to-refresh .refresh-icon {
+            margin-right: 8px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* スクロール最適化 */
+        .container {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        /* セーフエリア対応 */
+        @supports (padding: max(0px)) {
+            .container {
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
+            }
+
+            .header {
+                padding-top: max(12px, env(safe-area-inset-top));
+            }
+
+            @media (max-width: 768px) {
+                .modal-actions {
+                    padding-bottom: max(16px, env(safe-area-inset-bottom));
+                }
+
+                .container {
+                    padding-left: max(8px, env(safe-area-inset-left));
+                    padding-right: max(8px, env(safe-area-inset-right));
+                }
+            }
         }
 
         .notify-badge {
@@ -2541,6 +3042,91 @@
                 }
             }
         }
+
+        // モバイル向けタッチ操作機能
+        let touchStartY = 0;
+        let touchStartX = 0;
+        let isPulling = false;
+
+        // プルトゥリフレッシュ機能
+        function initPullToRefresh() {
+            const container = document.querySelector('.container');
+            if (!container) return;
+
+            // プルトゥリフレッシュ要素を追加
+            const pullToRefresh = document.createElement('div');
+            pullToRefresh.className = 'pull-to-refresh';
+            pullToRefresh.innerHTML = '<span class="refresh-icon">🔄</span>引っ張って更新';
+            container.insertBefore(pullToRefresh, container.firstChild);
+
+            container.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+                touchStartX = e.touches[0].clientX;
+                isPulling = false;
+            }, { passive: true });
+
+            container.addEventListener('touchmove', (e) => {
+                const touchY = e.touches[0].clientY;
+                const touchX = e.touches[0].clientX;
+                const deltaY = touchY - touchStartY;
+                const deltaX = Math.abs(touchX - touchStartX);
+
+                // 縦方向のスワイプかつページが最上部にある場合
+                if (deltaY > 0 && deltaX < 50 && container.scrollTop === 0) {
+                    if (deltaY > 100) {
+                        isPulling = true;
+                        pullToRefresh.classList.add('active');
+                        pullToRefresh.innerHTML = '<span class="refresh-icon">↓</span>離して更新';
+                    } else {
+                        pullToRefresh.classList.remove('active');
+                        pullToRefresh.innerHTML = '<span class="refresh-icon">🔄</span>引っ張って更新';
+                    }
+                }
+            }, { passive: true });
+
+            container.addEventListener('touchend', () => {
+                if (isPulling) {
+                    pullToRefresh.innerHTML = '<span class="refresh-icon">🔄</span>更新中...';
+                    setTimeout(() => {
+                        loadApplications();
+                        pullToRefresh.classList.remove('active');
+                        pullToRefresh.innerHTML = '<span class="refresh-icon">🔄</span>引っ張って更新';
+                        isPulling = false;
+                    }, 1000);
+                }
+            }, { passive: true });
+        }
+
+        // タッチフィードバック機能
+        function initTouchFeedback() {
+            // 申込アイテムのタッチフィードバック
+            document.addEventListener('touchstart', (e) => {
+                const item = e.target.closest('.application-item');
+                if (item) {
+                    item.style.transform = 'scale(0.98)';
+                    item.style.backgroundColor = '#f0f7ff';
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                const item = e.target.closest('.application-item');
+                if (item) {
+                    setTimeout(() => {
+                        item.style.transform = '';
+                        item.style.backgroundColor = '';
+                    }, 150);
+                }
+            }, { passive: true });
+        }
+
+        // 初期化時にモバイル機能を有効化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 既存の初期化処理...
+            if (window.innerWidth <= 768) {
+                initPullToRefresh();
+                initTouchFeedback();
+            }
+        });
 
         // 一覧に戻る
         function goBackToList() {
