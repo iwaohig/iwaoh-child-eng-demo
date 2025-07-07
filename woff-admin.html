@@ -627,6 +627,90 @@
             50% { opacity: 0.7; }
             100% { opacity: 1; }
         }
+        /* 予約日時モーダル */
+        .reservation-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #00c3f7;
+            box-shadow: 0 0 0 3px rgba(0, 195, 247, 0.1);
+        }
+
+        .applicant-info {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #00c3f7;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel, .btn-confirm {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        .btn-confirm {
+            background: #00c3f7;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #0099cc;
+        }
+
+        .btn-confirm:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
     </style>
 </head>
 <body>
@@ -721,6 +805,61 @@
             </div>
             <div class="modal-body" id="detailContent">
                 <!-- 詳細データがここに表示されます -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 予約日時入力モーダル -->
+    <div id="reservationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">予約日時の設定</div>
+                <div class="close" onclick="closeReservationModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="reservation-form">
+                    <div class="form-group">
+                        <label>申込者情報</label>
+                        <div id="reservationApplicantInfo" class="applicant-info"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reservationDate">予約日 <span class="required">*</span></label>
+                        <input type="date" id="reservationDate" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reservationTime">予約時間 <span class="required">*</span></label>
+                        <select id="reservationTime" class="form-input" required>
+                            <option value="">時間を選択してください</option>
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="15:00">15:00</option>
+                            <option value="15:30">15:30</option>
+                            <option value="16:00">16:00</option>
+                            <option value="16:30">16:30</option>
+                            <option value="17:00">17:00</option>
+                            <option value="17:30">17:30</option>
+                            <option value="18:00">18:00</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reservationNotes">備考</label>
+                        <textarea id="reservationNotes" class="form-input" rows="3" placeholder="特別な要望や注意事項があれば記入してください"></textarea>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeReservationModal()">キャンセル</button>
+                        <button type="button" class="btn-confirm" onclick="confirmReservation()">予約確定</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1094,7 +1233,7 @@
                     </div>
                     
                     <div class="card-actions">
-                        <select class="status-select" onchange="changeStatus('${app.id}', this.value)">
+                        <select class="status-select" onchange="handleStatusChange('${app.id}', this.value, this)">
                             <option value="${app.status}">${app.status}</option>
                             <option value="確認">確認</option>
                             <option value="予約未決定">予約未決定</option>
@@ -1168,6 +1307,114 @@
             } catch (error) {
                 console.error('ステータス更新に失敗しました:', error);
                 alert(`ステータスの更新に失敗しました: ${error.message}`);
+            }
+        }
+
+        // ステータス変更処理（予約済み選択時にモーダル表示）
+        async function handleStatusChange(id, newStatus, selectElement) {
+            if (newStatus === '予約済み') {
+                // 元の値に戻す
+                const app = applications.find(app => app.id === id);
+                if (app) {
+                    selectElement.value = app.status;
+                }
+                // 予約日時モーダルを表示
+                showReservationModal(id);
+            } else {
+                // 通常のステータス変更
+                await changeStatus(id, newStatus);
+            }
+        }
+
+        // 予約日時モーダル表示
+        function showReservationModal(id) {
+            const app = applications.find(app => app.id === id);
+            if (!app) {
+                alert('申込データが見つかりません');
+                return;
+            }
+
+            // 申込者情報を表示
+            document.getElementById('reservationApplicantInfo').innerHTML = `
+                <strong>${app.child.lastName} ${app.child.firstName}</strong> さん<br>
+                保護者: ${app.parent.lastName} ${app.parent.firstName} 様<br>
+                教室: ${app.classroom}
+            `;
+
+            // 今日の日付を最小値に設定
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reservationDate').min = today;
+
+            // フォームをリセット
+            document.getElementById('reservationDate').value = '';
+            document.getElementById('reservationTime').value = '';
+            document.getElementById('reservationNotes').value = '';
+
+            // モーダルにIDを保存
+            document.getElementById('reservationModal').dataset.applicationId = id;
+            
+            // モーダルを表示
+            document.getElementById('reservationModal').style.display = 'block';
+        }
+
+        // 予約日時モーダルを閉じる
+        function closeReservationModal() {
+            document.getElementById('reservationModal').style.display = 'none';
+        }
+
+        // 予約確定
+        async function confirmReservation() {
+            const id = document.getElementById('reservationModal').dataset.applicationId;
+            const date = document.getElementById('reservationDate').value;
+            const time = document.getElementById('reservationTime').value;
+            const notes = document.getElementById('reservationNotes').value;
+
+            // バリデーション
+            if (!date || !time) {
+                alert('予約日と予約時間を入力してください');
+                return;
+            }
+
+            // 予約日時データを含めてステータス更新
+            try {
+                const url = `https://im1swit6p3.execute-api.ap-northeast-1.amazonaws.com/prod/admin/applications/${id}`;
+                const requestBody = { 
+                    status: '予約済み',
+                    reservationDate: date,
+                    reservationTime: time,
+                    reservationNotes: notes || ''
+                };
+                
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (response.ok) {
+                    // ローカルデータも更新
+                    const app = applications.find(app => app.id === id);
+                    if (app) {
+                        app.status = '予約済み';
+                        app.reservationDate = date;
+                        app.reservationTime = time;
+                        app.reservationNotes = notes;
+                        app.updatedAt = new Date().toISOString();
+                    }
+                    
+                    updateStats();
+                    renderApplicationsList();
+                    closeReservationModal();
+                    
+                    alert('予約が確定されました！Bot通知も送信されます。');
+                } else {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('予約確定に失敗しました:', error);
+                alert(`予約の確定に失敗しました: ${error.message}`);
             }
         }
 
