@@ -23,6 +23,18 @@ Parameters:
     NoEcho: true
     Description: 'LINE WORKS Bot Refresh Token'
     Default: 'jp1AAAAhOu6veazZ218mv01Dok0spum3ZNtpJd/KQ6+AFfdsUfkQYEbr/UZPUPlMl6+RUCeA2baqKKJPZI/HYOBwfLMeg9BFidZazj7SaTOaT2GlgASoxKljVwgU7zm15a47op4JB/6bv1zAP2DPYS4WNfpC+FlPO2WWL/nalIH2TtePb3SaB58QkAUemgGgZS/t/IE5A==.kwiu9yNovfcs8Rumz2QSOg'
+  
+  BotClientId:
+    Type: String
+    NoEcho: true
+    Description: 'LINE WORKS Bot Client ID'
+    Default: 'zC3oMwjuE5nbtWwAkPkk'
+  
+  BotClientSecret:
+    Type: String
+    NoEcho: true
+    Description: 'LINE WORKS Bot Client Secret'
+    Default: '0OldwPrBU_'
 
 Resources:
   # DynamoDB Table for Applications
@@ -133,12 +145,13 @@ Resources:
           CORS_ORIGIN: !Ref CorsOrigin
       Code:
         ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
+          const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
+          const { marshall } = require('@aws-sdk/util-dynamodb');
+          const dynamodb = new DynamoDBClient({ region: process.env.AWS_REGION || 'ap-northeast-1' });
 
           exports.handler = async (event) => {
               const headers = {
-                  'Access-Control-Allow-Origin': process.env.CORS_ORIGIN,
+                  'Access-Control-Allow-Origin': '*',
                   'Access-Control-Allow-Headers': 'Content-Type',
                   'Access-Control-Allow-Methods': 'POST, OPTIONS',
                   'Content-Type': 'application/json'
@@ -164,28 +177,17 @@ Resources:
                           timestamp,
                           status: '確認',
                           classroom: body.classroom,
-                          parent: {
-                              lastName: body.parentLastName,
-                              firstName: body.parentFirstName,
-                              lastNameKana: body.parentLastNameKana,
-                              firstNameKana: body.parentFirstNameKana,
-                              zipCode: body.zipCode,
-                              address: body.address,
-                              phone: body.phone,
-                              email: body.email
-                          },
-                          child: {
-                              lastName: body.childLastName,
-                              firstName: body.childFirstName,
-                              lastNameKana: body.childLastNameKana,
-                              firstNameKana: body.childFirstNameKana,
-                              gender: body.gender,
-                              birthYear: body.birthYear,
-                              birthMonth: body.birthMonth,
-                              birthDay: body.birthDay
-                          },
+                          parentLastName: body.parentLastName,
+                          parentFirstName: body.parentFirstName,
+                          parentPhone: body.phone,
+                          parentEmail: body.email,
+                          childLastName: body.childLastName,
+                          childFirstName: body.childFirstName,
+                          childGender: body.gender,
+                          childBirthYear: body.birthYear,
+                          childBirthMonth: body.birthMonth,
+                          childBirthDay: body.birthDay,
                           trigger: body.trigger,
-                          triggerOther: body.triggerOther || '',
                           message: body.message || '',
                           createdAt: timestamp,
                           updatedAt: timestamp
@@ -193,10 +195,10 @@ Resources:
                       
                       const params = {
                           TableName: process.env.APPLICATIONS_TABLE,
-                          Item: item
+                          Item: marshall(item, { removeUndefinedValues: true })
                       };
                       
-                      await dynamodb.put(params).promise();
+                      await dynamodb.send(new PutItemCommand(params));
                       
                       return {
                           statusCode: 200,
@@ -204,7 +206,8 @@ Resources:
                           body: JSON.stringify({
                               success: true,
                               message: 'Application submitted successfully',
-                              submissionId
+                              id: submissionId,
+                              timestamp: timestamp
                           })
                       };
                   }
@@ -249,16 +252,21 @@ Resources:
           CORS_ORIGIN: !Ref CorsOrigin
       Code:
         ZipFile: |
-          const AWS = require('aws-sdk');
-          const dynamodb = new AWS.DynamoDB.DocumentClient();
+          const { DynamoDBClient, ScanCommand, UpdateItemCommand } = require('@aws-sdk/client-dynamodb');
+          const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
+          const dynamodb = new DynamoDBClient({ region: process.env.AWS_REGION || 'ap-northeast-1' });
 
           exports.handler = async (event) => {
               const headers = {
-                  'Access-Control-Allow-Origin': process.env.CORS_ORIGIN,
+                  'Access-Control-Allow-Origin': '*',
                   'Access-Control-Allow-Headers': 'Content-Type',
                   'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
                   'Content-Type': 'application/json'
               };
+              
+              console.log('DynamoDB scan params:', {
+                  TableName: process.env.APPLICATIONS_TABLE
+              });
 
               try {
                   if (event.httpMethod === 'OPTIONS') {
@@ -274,14 +282,45 @@ Resources:
                           TableName: process.env.APPLICATIONS_TABLE
                       };
                       
-                      const result = await dynamodb.scan(params).promise();
+                      console.log('DynamoDB scan params:', params);
+                      const command = new ScanCommand(params);
+                      const result = await dynamodb.send(command);
+                      const rawItems = result.Items ? result.Items.map(item => unmarshall(item)) : [];
+                      
+                      // データ構造を統一（WOFF管理画面のexpected形式に変換）
+                      const items = rawItems.map(item => {
+                          // 既にネスト構造の場合はそのまま、フラット構造の場合は変換
+                          if (item.child && item.parent) {
+                              return item; // 既に正しい構造
+                          }
+                          
+                          return {
+                              ...item,
+                              child: {
+                                  lastName: item.childLastName || '',
+                                  firstName: item.childFirstName || '',
+                                  gender: item.childGender || '',
+                                  birthYear: item.childBirthYear || '',
+                                  birthMonth: item.childBirthMonth || '',
+                                  birthDay: item.childBirthDay || ''
+                              },
+                              parent: {
+                                  lastName: item.parentLastName || '',
+                                  firstName: item.parentFirstName || '',
+                                  email: item.parentEmail || '',
+                                  phone: item.parentPhone || ''
+                              }
+                          };
+                      });
+                      
+                      console.log('DynamoDB scan result:', { Count: result.Count, Items: items.length });
                       
                       return {
                           statusCode: 200,
                           headers,
                           body: JSON.stringify({
                               success: true,
-                              data: result.Items
+                              data: items
                           })
                       };
                   }
@@ -298,20 +337,42 @@ Resources:
                           };
                       }
                       
-                      const params = {
-                          TableName: process.env.APPLICATIONS_TABLE,
-                          Key: { id },
-                          UpdateExpression: 'SET #status = :status, updatedAt = :updatedAt',
-                          ExpressionAttributeNames: {
-                              '#status': 'status'
-                          },
-                          ExpressionAttributeValues: {
-                              ':status': body.status,
-                              ':updatedAt': new Date().toISOString()
-                          }
+                      // 動的にUpdateExpressionとAttributeValuesを構築
+                      let updateExpression = 'SET #status = :status, updatedAt = :updatedAt';
+                      const expressionAttributeNames = {
+                          '#status': 'status'
+                      };
+                      const expressionAttributeValues = {
+                          ':status': body.status,
+                          ':updatedAt': new Date().toISOString()
                       };
                       
-                      await dynamodb.update(params).promise();
+                      // 予約日時フィールドがある場合は追加
+                      if (body.reservationDate) {
+                          updateExpression += ', reservationDate = :reservationDate';
+                          expressionAttributeValues[':reservationDate'] = body.reservationDate;
+                      }
+                      
+                      if (body.reservationTime) {
+                          updateExpression += ', reservationTime = :reservationTime';
+                          expressionAttributeValues[':reservationTime'] = body.reservationTime;
+                      }
+                      
+                      if (body.reservationNotes !== undefined) {
+                          updateExpression += ', reservationNotes = :reservationNotes';
+                          expressionAttributeValues[':reservationNotes'] = body.reservationNotes;
+                      }
+                      
+                      const params = {
+                          TableName: process.env.APPLICATIONS_TABLE,
+                          Key: marshall({ id }),
+                          UpdateExpression: updateExpression,
+                          ExpressionAttributeNames: expressionAttributeNames,
+                          ExpressionAttributeValues: marshall(expressionAttributeValues)
+                      };
+                      
+                      const updateCommand = new UpdateItemCommand(params);
+                      await dynamodb.send(updateCommand);
                       
                       return {
                           statusCode: 200,
@@ -364,6 +425,8 @@ Resources:
           USER_ID: 'iwao.higashimoto@works-demo.org'
           ACCESS_TOKEN: !Ref BotAccessToken
           REFRESH_TOKEN: !Ref BotRefreshToken
+          CLIENT_ID: !Ref BotClientId
+          CLIENT_SECRET: !Ref BotClientSecret
       Code:
         ZipFile: |
           const https = require('https');
@@ -372,21 +435,20 @@ Resources:
           const USER_ID = process.env.USER_ID;
           let accessToken = process.env.ACCESS_TOKEN;
           const refreshToken = process.env.REFRESH_TOKEN;
+          const clientId = process.env.CLIENT_ID;
+          const clientSecret = process.env.CLIENT_SECRET;
           let tokenExpiresAt = Date.now() + 3600 * 1000;
           
           async function refreshAccessToken() {
               return new Promise((resolve, reject) => {
-                  const data = JSON.stringify({
-                      refreshToken: refreshToken,
-                      grantType: 'refresh_token'
-                  });
+                  const data = `refresh_token=${encodeURIComponent(refreshToken)}&grant_type=refresh_token&client_id=${encodeURIComponent(clientId)}&client_secret=${encodeURIComponent(clientSecret)}`;
           
                   const options = {
                       hostname: 'auth.worksmobile.com',
                       path: '/oauth2/v2.0/token',
                       method: 'POST',
                       headers: {
-                          'Content-Type': 'application/json',
+                          'Content-Type': 'application/x-www-form-urlencoded',
                           'Content-Length': Buffer.byteLength(data)
                       }
                   };
@@ -420,21 +482,60 @@ Resources:
               });
           }
           
-          async function sendLinkMessage(applicationData) {
-              if (Date.now() > tokenExpiresAt - 300000) {
+          async function sendLinkMessage(applicationData, messageType = 'new') {
+              const currentTime = Date.now();
+              const timeUntilExpiry = tokenExpiresAt - currentTime;
+              console.log(`Token check: current=${new Date(currentTime).toISOString()}, expires=${new Date(tokenExpiresAt).toISOString()}, timeLeft=${timeUntilExpiry}ms`);
+              
+              if (currentTime > tokenExpiresAt - 300000) {
+                  console.log('Token is expiring soon, refreshing...');
                   try {
                       await refreshAccessToken();
+                      console.log('Token refresh completed successfully');
                   } catch (error) {
                       console.error('Failed to refresh token:', error);
                       throw error;
                   }
+              } else {
+                  console.log('Token is still valid, no refresh needed');
+              }
+          
+              let contentText = '';
+              let linkText = '';
+              
+              if (messageType === 'new') {
+                  contentText = `新しい体験申込がありました！\n\n申込者: ${applicationData.parent.lastName} ${applicationData.parent.firstName} 様\nお子様: ${applicationData.child.lastName} ${applicationData.child.firstName} さん\n教室: ${applicationData.classroom}\n\n詳細を確認してください。`;
+                  linkText = '申込詳細を確認';
+              } else if (messageType === 'status') {
+                  let statusMessage = `申込ステータスが変更されました\n\n申込者: ${applicationData.parent.lastName} ${applicationData.parent.firstName} 様\nお子様: ${applicationData.child.lastName} ${applicationData.child.firstName} さん\n教室: ${applicationData.classroom}\n新しいステータス: ${applicationData.status}`;
+                  
+                  // 予約済みの場合は予約日時情報を追加
+                  if (applicationData.status === '予約済み' && applicationData.reservationDate && applicationData.reservationTime) {
+                      const reservationDate = new Date(applicationData.reservationDate);
+                      const formattedDate = reservationDate.toLocaleDateString('ja-JP', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          weekday: 'short'
+                      });
+                      statusMessage += `\n予約日時: ${formattedDate} ${applicationData.reservationTime}`;
+                      
+                      if (applicationData.reservationNotes) {
+                          statusMessage += `\n備考: ${applicationData.reservationNotes}`;
+                      }
+                      linkText = '予約詳細を確認';
+                  } else {
+                      linkText = 'ステータス確認';
+                  }
+                  
+                  contentText = statusMessage + '\n\n詳細を確認してください。';
               }
           
               const message = {
                   content: {
                       type: 'link',
-                      contentText: `新しい体験申込がありました！\n\n申込者: ${applicationData.parent.lastName} ${applicationData.parent.firstName} 様\nお子様: ${applicationData.child.lastName} ${applicationData.child.firstName} さん\n教室: ${applicationData.classroom}\n\n詳細を確認してください。`,
-                      linkText: '申込詳細を確認',
+                      contentText: contentText,
+                      linkText: linkText,
                       link: `https://woff.worksmobile.com/woff/Gwb_BTfV562bnUxhhp81PA/?view=detail&id=${applicationData.id}`
                   }
               };
@@ -463,7 +564,12 @@ Resources:
                       res.on('end', () => {
                           if (res.statusCode === 200 || res.statusCode === 201) {
                               console.log('Message sent successfully:', responseData);
-                              resolve(JSON.parse(responseData));
+                              try {
+                                  resolve(responseData ? JSON.parse(responseData) : { success: true });
+                              } catch (parseError) {
+                                  console.log('Response parse warning:', parseError.message);
+                                  resolve({ success: true, message: 'Message sent (empty response)' });
+                              }
                           } else {
                               reject(new Error(`Failed to send message: ${res.statusCode} - ${responseData}`));
                           }
@@ -487,7 +593,10 @@ Resources:
                   
                   if (event.Records) {
                       for (const record of event.Records) {
+                          console.log(`Processing ${record.eventName} event for record:`, record.dynamodb.Keys);
+                          
                           if (record.eventName === 'INSERT') {
+                              // 新規申込通知
                               applicationData = record.dynamodb.NewImage;
                               
                               applicationData = {
@@ -513,7 +622,53 @@ Resources:
                                   timestamp: applicationData.timestamp.S
                               };
           
-                              await sendLinkMessage(applicationData);
+                              console.log('Sending new application notification');
+                              await sendLinkMessage(applicationData, 'new');
+                              
+                          } else if (record.eventName === 'MODIFY') {
+                              // ステータス変更通知
+                              const oldImage = record.dynamodb.OldImage;
+                              const newImage = record.dynamodb.NewImage;
+                              
+                              // ステータスが変更されたかチェック
+                              const oldStatus = oldImage.status ? oldImage.status.S : '';
+                              const newStatus = newImage.status ? newImage.status.S : '';
+                              
+                              if (oldStatus !== newStatus) {
+                                  console.log(`Status changed from '${oldStatus}' to '${newStatus}'`);
+                                  
+                                  applicationData = {
+                                      id: newImage.id.S,
+                                      parent: {
+                                          lastName: newImage.parentLastName.S,
+                                          firstName: newImage.parentFirstName.S,
+                                          email: newImage.parentEmail.S,
+                                          phone: newImage.parentPhone.S
+                                      },
+                                      child: {
+                                          lastName: newImage.childLastName.S,
+                                          firstName: newImage.childFirstName.S,
+                                          gender: newImage.childGender.S,
+                                          birthYear: newImage.childBirthYear.S,
+                                          birthMonth: newImage.childBirthMonth.S,
+                                          birthDay: newImage.childBirthDay.S
+                                      },
+                                      classroom: newImage.classroom.S,
+                                      trigger: newImage.trigger ? newImage.trigger.S : '',
+                                      message: newImage.message ? newImage.message.S : '',
+                                      status: newStatus,
+                                      timestamp: newImage.timestamp.S,
+                                      oldStatus: oldStatus,
+                                      reservationDate: newImage.reservationDate ? newImage.reservationDate.S : '',
+                                      reservationTime: newImage.reservationTime ? newImage.reservationTime.S : '',
+                                      reservationNotes: newImage.reservationNotes ? newImage.reservationNotes.S : ''
+                                  };
+                                  
+                                  console.log('Sending status change notification');
+                                  await sendLinkMessage(applicationData, 'status');
+                              } else {
+                                  console.log('Status not changed, skipping notification');
+                              }
                           }
                       }
                   } else if (event.body) {
